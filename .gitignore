@@ -1,0 +1,49 @@
+# ----------------------------------------------------------
+# Global ignores
+# ----------------------------------------------------------
+node_modules/
+.env
+.env.local
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+coverage/
+
+# ----------------------------------------------------------
+# Backend-specific ignores
+# ----------------------------------------------------------
+backend/node_modules/
+backend/config/config.env
+backend/temp1.js
+backend/temp2.js
+
+# If backend uploads folder exists
+backend/uploads/
+
+# ----------------------------------------------------------
+# Frontend-specific ignores
+# ----------------------------------------------------------
+frontend/node_modules/
+frontend/.env
+frontend/build/
+frontend/dist/
+
+# Files you want to ignore inside frontend/src
+frontend/src/temp2.jsx
+frontend/src/temp3.jsx
+
+# ----------------------------------------------------------
+# Old project folder (do not upload)
+# ----------------------------------------------------------
+mobilemart(html)/
+screenShots/
+
+# ----------------------------------------------------------
+# Optional editor ignores
+# ----------------------------------------------------------
+.vscode/
+.idea/
+*.swp

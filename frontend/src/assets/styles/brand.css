@@ -1,0 +1,32 @@
+/* BRAND QUOTE (if you use it above brand section) */
+.quote-custom {
+  font-size: 4em;
+  color: #0dffe9;
+  font-family: "Comic Neue", cursive;
+  font-weight: 450;
+  font-style: normal;
+}
+
+/* BRAND GRID */
+.cus-brand div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cus-brand img {
+  border-radius: 10px;
+  max-height: 200px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.cus-brand img:hover {
+  transform: scale(1.1);
+}
+
+/* Responsive brand logo */
+@media screen and (max-width: 480px) {
+  .cus-logo {
+    max-width: 130px;
+  }
+}

@@ -1,0 +1,54 @@
+/* inter font from google fonts */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz@0,14..32;1,14..32&display=swap');
+
+/* Comic Neue font from google fonts */
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+
+
+/* Make rem units consistent even if browser zoom or base font size changes */
+html {
+  font-size: 14px; /* Or 15px, smaller base font */
+}
+
+:root {
+    --voilet: #5e17eb;
+    --green: #13a82b;
+    --white: #ffffff;
+    --black: #000000;
+    --darkwhite: #f8f8f8;
+    --red: #ee1515;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+
+}
+/* ======== GLOBAL CONTAINER STYLES ======== */
+
+.container {
+  width: 100%;
+}
+
+/* Centered fixed-width wrapper */
+.holder {
+  width: 1800px;
+  margin: 0 auto;
+  max-width: 100%; /* ✅ prevents overflow on smaller screens */
+}
+
+/* Optional: Responsive width adjustments */
+@media (max-width: 1200px) {
+  .holder {
+    width: 95%;
+  }
+}
+
+body {
+
+    font-family: "Inter", "Arial", "Helvetica", sans-serif !important;
+    font-optical-sizing: auto;
+    /* font-weight: 400; */
+    font-style: normal;
+}

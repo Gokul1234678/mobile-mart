@@ -1,0 +1,108 @@
+/* ======================================================
+   🔹 NAVBAR STYLE - MOBILE MART
+   ====================================================== */
+
+/* Base link colors */
+.navbar-nav .nav-link {
+  color: var(--white);
+}
+
+.logout-butt {
+  color: var(--red) !important;
+}
+
+li.responsive-border {
+  font-size: 1.5em;
+}
+
+/* -----------------------------------------
+   🔹 Base navbar link styling (global)
+   ----------------------------------------- */
+.navbar .nav-link {
+  color: var(--white);
+  position: relative;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Hover text color (global) */
+.navbar .nav-link:hover {
+  color: var(--green);
+}
+
+.navbar .nav-link i {
+  color: var(--white);
+  transition: color 0.3s ease;
+}
+
+.navbar .nav-link:hover i {
+  color: var(--green);
+}
+
+/* -----------------------------------------
+   🔹 Underline animation
+   (Only for Products, Contact, About)
+   ----------------------------------------- */
+@media (min-width: 992px) {
+  /* Base underline setup */
+  .navbar .nav-item.products .nav-link::after,
+  .navbar .nav-item.contact .nav-link::after,
+  .navbar .nav-item.about .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--white);
+    transition: width 0.3s ease;
+  }
+
+  /* On hover → underline expands */
+  .navbar .nav-item.products .nav-link:hover::after,
+  .navbar .nav-item.contact .nav-link:hover::after,
+  .navbar .nav-item.about .nav-link:hover::after {
+    width: 100%;
+  }
+}
+
+/* -----------------------------------------
+   🔹 Active link style
+   ----------------------------------------- */
+.navbar .nav-link.active {
+  color: var(--green);
+}
+
+.navbar .nav-link.active::after {
+  width: 100%;
+}
+
+/* -----------------------------------------
+   🔹 Dropdown hover
+   ----------------------------------------- */
+.dropdown-menu .dropdown-item:hover {
+  /* background-color: var(--voilet); */
+  /* color: white; */
+  transition: background-color 0.2s ease;
+}
+
+/* -----------------------------------------
+   🔹 Navbar icons hover (cart, logout, etc.)
+   ----------------------------------------- */
+.navbar img:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s ease;
+}
+
+/* -----------------------------------------
+   🔹 Desktop fix for border
+   ----------------------------------------- */
+@media (min-width: 992px) {
+  li.responsive-border {
+    border-bottom: none !important;
+  }
+}
+
+/* ======================================================
+   END NAVBAR STYLE
+   ====================================================== */

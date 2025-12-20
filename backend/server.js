@@ -42,7 +42,7 @@ mongoose.connect(process.env.MONGO_URI)
 // })
 
 
-// user Schema starts
+// 🙎🏻‍♂️ user Schema starts
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -244,7 +244,7 @@ app.post("/api/forgot-password", async (req, res) => {
     // 2️⃣ Check if user exists in database using email
     // ------------------------------------------------------------
 
-     user = await userModel.findOne({ email });
+    user = await userModel.findOne({ email });
 
     // If no user found → return error
     if (!user) {
@@ -593,16 +593,386 @@ app.get("/api/logout", isAuthenticatedUser, (req, res) => {
 });
 
 
+// ✅ Get Logged-in User Details
+app.get("/api/myprofile", isAuthenticatedUser, async (req, res) => {
+  //                     🔐 ☝️ (Middleware → ensures user is logged in
+  try {
+    // console.log(req);
+    // req.user is already set by isAuthenticatedUser middleware
+    res.status(200).json({
+      success: true,
+      user: req.user
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+  //   { ⭐ HOW THIS WORKS (VERY SIMPLE)
+
+  // 1️⃣ User logs in
+  //    → Backend creates JWT token
+  //    → JWT token is stored in HTTP-only cookie
+
+  // 2️⃣ User calls protected API
+  //    → Example: GET /api/myprofile
+
+  // 3️⃣ isAuthenticatedUser middleware runs
+  //    → Reads token from request cookies
+  //    → Verifies token using JWT secret
+  //    → Decodes user ID from token
+  //    → Fetches user from database
+  //    → Attaches user data to req.user
+  //      (password is already excluded)
+
+  // 4️⃣ Controller sends response
+  //    → Returns req.user
+  // }  
+});
+
+
+// ✅ Change Password (Logged-in User)
+app.put("/api/change-password", isAuthenticatedUser, async (req, res) => {
+  //                     🔐 ☝️ (Middleware → ensures user is logged in
+
+  //{ 🧠 HOW THIS API WORKS (VERY SIMPLE)
+  // 1️⃣ User logs in
+  //    → JWT token is created
+  //    → Token is stored in HTTP-only cookie
+  // 2️⃣ User calls protected API
+  //    → POST /api/change-password
+  // 3️⃣ isAuthenticatedUser middleware runs
+  //    → Reads token from cookies
+  //    → Verifies JWT token
+  //    → Fetches user from database
+  //    → Sets user data on req.user
+  // 4️⃣ Backend logic (change password)
+  //    → Compares old password with stored hashed password
+  //    → Hashes the new password
+  //    → Saves updated password in database
+  //}
+
+
+  try {
+    const { oldPassword, newPassword } = req.body;
+    // ------------------------------------------------------------
+    // 1️⃣ Validate input
+    // ------------------------------------------------------------
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Old password and new password are required"
+      });
+    }
+    // check password must be at least 6 characters
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Old password and new password are required"
+      })
+    }
+
+    // ------------------------------------------------------------
+    // 2️⃣ Get user with password
+    // req.user comes from isAuthenticatedUser middleware
+    // But password is excluded → so fetch again with +password
+    // ------------------------------------------------------------
+    const user = await userModel
+      .findById(req.user._id)
+      .select("+password");
+
+    // ------------------------------------------------------------
+    // 3️⃣ Compare old password with stored password
+    // ------------------------------------------------------------
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Old password is incorrect"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 4️⃣ Set new password
+    // bcrypt hashing happens automatically in pre-save middleware
+    // ------------------------------------------------------------
+    user.password = newPassword;
+
+    await user.save();
+
+    // ------------------------------------------------------------
+    // 5️⃣ Success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully"
+    });
 
 
 
 
-// user Schema end
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+
+// ✅ UPDATE USER PROFILE (LOGGED-IN USER)
+app.put("/api/update-profile", isAuthenticatedUser, async (req, res) => {
+  //                     🔐 ☝️ (Middleware → ensures user is logged in
+
+  // 🧠 HOW THIS API WORKS (SIMPLE)
+  //     1️⃣ User logs in → token stored in cookie
+  //     2️⃣ Calls /api/update-profile
+  //     3️⃣ isAuthenticatedUser verifies token
+  //     4️⃣ Only provided fields are updated
+  //     5️⃣ Password is untouched
+  //     6️⃣ Updated user is returned
+
+  try {
+    // ------------------------------------------------------------
+    // 📥 1️⃣ Extract allowed fields from request body
+    // ------------------------------------------------------------
+    const {
+      name,        // user's name
+      phone,       // user's phone number
+      gender,      // user's gender
+      street,      // address street
+      city,        // address city
+      state,       // address state
+      pincode      // address pincode
+    } = req.body;
+
+    // ------------------------------------------------------------
+    // 🧱 2️⃣ Create an empty object to store update fields
+    // ------------------------------------------------------------
+    const updateData = {};
+
+    // ------------------------------------------------------------
+    // ✏️ 3️⃣ Add basic profile fields if they exist
+    // ------------------------------------------------------------
+    if (name) updateData.name = name;                 // update name
+    if (phone) updateData.phone = phone;              // update phone
+    if (gender) updateData.gender = gender.toLowerCase(); // normalize gender
+
+
+    // ------------------------------------------------------------
+    // 🏠 4️⃣ Handle address update (nested object)
+    // ------------------------------------------------------------
+    // Check if any address field is provided
+    if (street || city || state || pincode) {
+
+      // Create address object
+      updateData.address = {};
+
+      // Add individual address fields if present
+      if (street) updateData.address.street = street;
+      if (city) updateData.address.city = city;
+      if (state) updateData.address.state = state;
+      if (pincode) updateData.address.pincode = pincode;
+    }
+
+    // ------------------------------------------------------------
+    // 💾 5️⃣ Update user document in database
+    // ------------------------------------------------------------
+    const updatedUser = await userModel.findByIdAndUpdate(
+      req.user._id,       // logged-in user's ID (from JWT middleware)
+      updateData,         // fields to update
+      {
+        new: true,        // return the updated document
+        runValidators: true // apply schema validation rules
+      }
+    )
+      .select("-password"); // exclude password from response
+
+
+    // ------------------------------------------------------------
+    // ✅ 6️⃣ Send success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,                       // request success flag
+      message: "Profile updated successfully", // success message
+      user: updatedUser                   // updated user data
+    });
+
+
+  } catch (error) {
+    // ------------------------------------------------------------
+    // ❌ 7️⃣ Handle server errors
+    // ------------------------------------------------------------
+    res.status(500).json({
+      success: false,                     // request failed
+      message: error.message              // error reason
+    });
+  }
+});
 
 
 
+//🧑‍💼 USER MANAGEMENT (ADMIN) --> Admin Routes 
 
-// Product Schema start
+// ✅ Get All Users (🔐 ADMIN ONLY)
+//                                                👇🛡️ Middleware → allow only admins
+app.get("/api/admin/users", isAuthenticatedUser, isAdmin, async (req, res) => {
+  //                     🔐 ☝️ (Middleware → ensures user is logged in
+  // Purpose:
+  // Show all registered users
+  // Used in Admin Panel (Users List)
+  try {
+    const users = await userModel.find().select("-password");
+
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      users
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+
+
+});
+
+
+// ✅ Get Single User by ID (🔐 ADMIN ONLY)
+app.get("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) => {
+  // Purpose:
+  //     View user profile
+  //     Debug issues
+  try {
+    const user = await userModel.findById(req.params.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Invalid user ID"
+    });
+  }
+
+});
+
+
+// ✅ UPDATE USER ROLE (🔐 ADMIN ONLY)
+app.put("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) => {
+
+  // Purpose:
+  //   Promote user to admin
+  //   Demote admin to user
+  try {
+    // ------------------------------------------------------------
+    // 📥 1️⃣ Extract role from request body
+    // ------------------------------------------------------------
+    const { role } = req.body;
+
+    // ------------------------------------------------------------
+    // ❌ 2️⃣ Validate role value
+    // ------------------------------------------------------------
+    // Role must exist and be either "user" or "admin"
+    if (!role || !["user", "admin"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Role must be either 'user' or 'admin'"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 💾 3️⃣ Update user role in database
+    // ------------------------------------------------------------
+    const updatedUser = await userModel
+      .findByIdAndUpdate(
+        req.params.id,       // user ID from URL params
+        { role },             // role to update
+        {
+          new: true,          // return updated user document
+          runValidators: true // apply schema validation
+        }
+      )
+      .select("-password");   // exclude password from response
+
+    // ------------------------------------------------------------
+    // ❌ 4️⃣ Handle user not found
+    // ------------------------------------------------------------
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // ✅ 5️⃣ Send success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,                      // operation successful
+      message: "User role updated successfully",
+      user: updatedUser                                // updated user data
+    });
+
+  } catch (error) {
+    // ------------------------------------------------------------
+    // ❌ 6️⃣ Handle invalid ObjectId or server error
+    // ------------------------------------------------------------
+    res.status(500).json({
+      success: false,
+      message: "Invalid user ID"
+    });
+  }
+
+}
+);
+
+// ✅ Delete User (🔐 ADMIN ONLY)
+app.delete("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) => {
+  try {
+    const user = await userModel.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Invalid user ID"
+    });
+  }
+});
+
+
+
+// 🙎🏻‍♂️ user Schema End
+
+
+
+// 📦 PRODUCT MANAGEMENT APIs start
+// Product Schema 
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -990,15 +1360,275 @@ app.get("/api/products/advanced-search", async (req, res) => {
   }
 
 })
-// Products Schema ends
+
+// 📦 PRODUCT MANAGEMENT APIs ends
 
 
 
+// orderSchema starts
+
+const orderSchema = new mongoose.Schema({
+
+  // 🔐 User who placed the order
+  // ------------------------------------------------------------
+  // 🔗 USER REFERENCE (Who placed the order)
+  // ------------------------------------------------------------
+  user: {//it is just field that can only store ObjectId (_id:Object(6943a635df0aec0e290fe9a3) of another document’s in this case we get this user id from req.user._id because of isAthenticated middleware  
+    type: mongoose.Schema.Types.ObjectId,
+    // → Stores only the MongoDB ObjectId of a user document
+
+    ref: "user",
+    // → Creates a relationship with the "user" collection
+    // → Tells Mongoose: this ObjectId belongs to the User model
+
+    required: [true, "User is required to place an order"]
+    // → Order cannot be created without a user
+  },
+
+  // 📦 Order items
+  orderItems: [
+    {
+      // ------------------------------------------------------------
+      // 🔗 PRODUCT REFERENCE (Which product is ordered)
+      // ------------------------------------------------------------
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        // → Stores only the MongoDB ObjectId of a product document
+
+        ref: "product",
+        // → Links this ObjectId to the Product model
+        // → Enables population of product details later
+
+        required: [true, "Product ID is required"]
+        // → Order item must have a product
+      },
+
+      name: {
+        type: String,
+        required: [true, "Product name is required"]
+      },
+      price: {
+        type: Number,
+        required: [true, "Product price is required"]
+      },
+      quantity: {
+        type: Number,
+        required: [true, "Product quantity is required"]
+      },
+      image: {
+        type: String,
+        required: [true, "Product image is required"]
+      }
+    }
+  ],
+
+  // 🚚 Shipping address
+  shippingAddress: {
+    address: {
+      type: String,
+      required: [true, "Address is required"]
+    },
+    city: {
+      type: String,
+      required: [true, "City is required"]
+    },
+    state: {
+      type: String,
+      required: [true, "State is required"]
+    },
+    pincode: {
+      type: String,
+      required: [true, "Pincode is required"]
+    }
+  },
+
+  // 💰 Total price
+  totalPrice: {
+    type: Number,
+    required: [true, "Total price is required"],
+    default: 0
+  },
+
+  // 💳 Payment status
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "paid"],
+    default: "pending"
+  },
+
+  // 🚚 Order status
+  orderStatus: {
+    type: String,
+    enum: ["processing", "shipped", "delivered", "cancelled"],
+    default: "processing"
+  },
+
+  paidAt: Date,
+  deliveredAt: Date
+
+}, { timestamps: true });
 
 
+const orderModel = mongoose.model("order", orderSchema);
 
+// ✅ Create New Order (User)
+app.post("/api/orders", isAuthenticatedUser, async (req, res) => {
+  try {
+    const { orderItems, shippingAddress, totalPrice } = req.body;
 
+    // ------------------------------------------------------------
+    // 1️⃣ Validate order items
+    // ------------------------------------------------------------
+    if (!orderItems || orderItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Order items are required"
+      });
+    }
 
+    // ------------------------------------------------------------
+    // 2️⃣ Validate shipping address
+    // ------------------------------------------------------------
+    if (
+      !shippingAddress ||
+      !shippingAddress.address ||
+      !shippingAddress.city ||
+      !shippingAddress.state ||
+      !shippingAddress.pincode
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Complete shipping address is required"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 3️⃣ Validate total price
+    // ------------------------------------------------------------
+    if (!totalPrice || totalPrice <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Total price must be greater than 0"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 4️⃣ Create order
+    // ------------------------------------------------------------
+    const order = await orderModel.create({
+      user: req.user._id,          // logged-in user
+      orderItems,
+      shippingAddress,
+      totalPrice
+    });
+
+    // ------------------------------------------------------------
+    // 5️⃣ Success response
+    // ------------------------------------------------------------
+    res.status(201).json({
+      success: true,
+      message: "Order placed successfully",
+      order
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// ✅ Get My Orders (Logged-in User)
+app.get("/api/orders/my", isAuthenticatedUser, async (req, res) => { 
+  try {
+    // ------------------------------------------------------------
+    // 1️⃣ Find orders of logged-in user
+    // ------------------------------------------------------------
+    const orders = await orderModel
+      .find({ user: req.user._id })
+      .sort({ createdAt: -1 }); // latest orders first
+    // ------------------------------------------------------------
+    // 2️⃣ Success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// ✅ GET SINGLE ORDER (USER / ADMIN)
+app.get("/api/orders/:id",isAuthenticatedUser,async (req, res) => {
+                    // 🔐 Middleware → ensure user is logged in
+    // ❌ When will this API reject the request?
+    //         User not logged in
+    //         Order ID does not exist
+    //         User is not owner AND not admin
+    //         Invalid order ID
+    try {
+      // ------------------------------------------------------------
+      // 🔍 1️⃣ Find order by ID
+      // ------------------------------------------------------------
+      // → req.params.id contains the order ID from URL
+      // → populate("user") fetches user details using ObjectId + ref
+      // → only "name" and "email" are returned
+      const order = await orderModel
+        .findById(req.params.id)
+        .populate("user", "name email");
+
+      // ------------------------------------------------------------
+      // ❌ 2️⃣ If order does not exist
+      // ------------------------------------------------------------
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found"
+        });
+      }
+
+      // ------------------------------------------------------------
+      // 🔐 3️⃣ Authorization check
+      // ------------------------------------------------------------
+      // → Normal user can view ONLY their own order
+      // → Admin can view ANY order
+      // → Compare order.user._id with logged-in req.user._id
+      if (
+        order.user._id.toString() !== req.user._id.toString() &&
+        req.user.role !== "admin"
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "Not authorized to view this order"
+        });
+      }
+
+      // ------------------------------------------------------------
+      // ✅ 4️⃣ Send success response
+      // ------------------------------------------------------------
+      res.status(200).json({
+        success: true,
+        order // full order details (with populated user)
+      });
+
+    } catch (error) {
+      // ------------------------------------------------------------
+      // ❌ 5️⃣ Handle invalid ObjectId or server error
+      // ------------------------------------------------------------
+      res.status(500).json({
+        success: false,
+        message: "Invalid order ID"
+      });
+    }
+  }
+);
 
 
 
@@ -1010,8 +1640,8 @@ app.get("/api/products/advanced-search", async (req, res) => {
 // --- Server Start ---
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
-  let d = Date.now()
-  console.log(`Server running on port ${PORT} at ${d}`)
+  // let d = Date.now()
+  console.log(`Server running on port ${PORT} `)
 });
 
 // 🛑 Handle unhandled promise rejections (DB errors, async fails)

@@ -1,47 +1,36 @@
-app.post("/api/login", async (req, res) => {
-  try {
-    let { email, password } = req.body;
+{
+  📁 Auth
+  - Register
+  - Login
+  - Logout
+  - Forgot Password
+  - Reset Password
+  - Change Password
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
+📁 User
+  - Get Profile
+  - Update Profile
 
-    let user = await userModel.findOne({ email }).select("+password");
+📁 Admin - Users
+  - Get All Users
+  - Get Single User
+  - Update User Role
+  - Delete User
 
-    if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
+📁 Products
+  - Get All Products
+  - Get Single Product
+  - Create Product (Admin)
+  - Update Product (Admin)
+  - Delete Product (Admin)
 
-    let isMatch = await bcrypt.compare(password, user.password);
+📁 Orders
+  - Create Order
+  - Get My Orders
+  - Get Single Order
 
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
+📁 Admin - Orders
+  - Get All Orders
+  - Update Order Status
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRE }
-    );
-
-    // Set cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000//After 7 days → cookie automatically expires → user logged out.
-    });
-
-    res.status(200).json({
-      message: "Login successful",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email
-      }
-    });
-
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+}

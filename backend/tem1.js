@@ -1,69 +1,20 @@
-app.post("/api/reset-password/:token", async (req, res) => {
+// ✅ Get My Orders (Logged-in User)
+app.get("/api/orders/my", isAuthenticatedUser, async (req, res) => {
   try {
     // ------------------------------------------------------------
-    // 1️⃣ Hash the token received from the URL
+    // 1️⃣ Find orders of logged-in user
     // ------------------------------------------------------------
-    const resetPasswordToken = crypto
-      .createHash("sha256")
-      .update(req.params.token)
-      .digest("hex");
+    const orders = await orderModel
+      .find({ user: req.user._id })
+      .sort({ createdAt: -1 }); // latest orders first
 
     // ------------------------------------------------------------
-    // 2️⃣ Find user with this token AND check expiry time
-    // ------------------------------------------------------------
-    const user = await userModel.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() } // token must still be valid
-    });
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired password reset token"
-      });
-    }
-
-    // ------------------------------------------------------------
-    // 3️⃣ Get new password from request body
-    // ------------------------------------------------------------
-    const { newPassword } = req.body;
-
-    if (!newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide new password"
-      });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be at least 6 characters"
-      });
-    }
-
-    // ------------------------------------------------------------
-    // 4️⃣ Set new password (bcrypt will hash it automatically)
-    // ------------------------------------------------------------
-    user.password = newPassword;
-
-    // ------------------------------------------------------------
-    // 5️⃣ Remove reset token & expiry
-    // ------------------------------------------------------------
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-
-    // ------------------------------------------------------------
-    // 6️⃣ Save updated user (pre-save middleware will hash password)
-    // ------------------------------------------------------------
-    await user.save();
-
-    // ------------------------------------------------------------
-    // 7️⃣ Success response
+    // 2️⃣ Success response
     // ------------------------------------------------------------
     res.status(200).json({
       success: true,
-      message: "Password reset successful! You can now log in."
+      count: orders.length,
+      orders
     });
 
   } catch (error) {

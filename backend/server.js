@@ -1031,53 +1031,96 @@ let productModel = mongoose.model("productsList", productSchema)
 // ✔ isAuthenticatedUser = user must be logged in
 // ✔ isAdmin = user must be admin
 // ✅ Get all products
-app.get("/api/products", isAuthenticatedUser, isAdmin, async (req, res) => {
+app.get("/api/products", isAuthenticatedUser, async (req, res) => {
   try {
-    let allProducts = await productModel.find();
-    res.json(allProducts)
-  }
-  catch (err) {
-    res.status(500).json({ message: err.message });
+    const products = await productModel.find();
 
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      products
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
-})
+});
+
 
 // ✅ Get single product by its ID
-app.get("/api/product/:id", isAuthenticatedUser, isAdmin, async (req, res) => {
+app.get("/api/product/:id", isAuthenticatedUser, async (req, res) => {
   try {
+    // ------------------------------------------------------------
+    // 1️⃣ Validate MongoDB ObjectId
+    // ------------------------------------------------------------
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID"
+      });
     }
-    let product = await productModel.findById(req.params.id);
+ // mongoose.Types.ObjectId.isValid(...)
+  //   This function checks:
+  //       “Does this string look like a real MongoDB ObjectId?”
+  //       Rules of a valid ObjectId:
+  //        Exactly 24 characters
+  //        Hexadecimal characters only (0-9 and a-f)
+
+    // ------------------------------------------------------------
+    // 2️⃣ Find product by ID
+    // ------------------------------------------------------------
+    const product = await productModel.findById(req.params.id);
+
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
     }
 
-    res.json(product);
-  }
-  catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    // ------------------------------------------------------------
+    // 3️⃣ Success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,
+      product
+    });
 
-})
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+});
 
-// 🆕 Add a new single product
-app.post("/api/product", async (req, res) => {
+
+// ✅🆕 Add a new single product(🔐 ADMIN ONLY)
+//                                                👇🛡️ Middleware → allow only admins 
+app.post("/api/product", isAuthenticatedUser, isAdmin, async (req, res) => {
+  //                     🔐 ☝️ (Middleware → ensures user is logged in
   try {
     const product = await productModel.create(req.body);
 
     return res.status(201).json({
+      success: true,
       message: "Product added successfully",
       product
     });
 
   } catch (err) {
-    return res.status(400).json({ message: err.message });
+    return res.status(400).json({ 
+      success: false,
+      message: err.message });
   }
 });
 
-// 🆕 🧩 Add multiple products at once
-app.post("/api/products/upload-many", async (req, res) => {
+// ✅🆕 🧩 Add multiple products at once(🔐 ADMIN ONLY)
+//                                                        👇🛡️ Middleware → allow only admins 
+app.post("/api/products/upload-many", isAuthenticatedUser, isAdmin, async (req, res) => {
   try {
     const productData = req.body; // expecting an array of products
     if (!Array.isArray(productData)) {
@@ -1089,75 +1132,137 @@ app.post("/api/products/upload-many", async (req, res) => {
     // Validate at least one product
     if (productData.length === 0) {
       return res.status(400).json({
+        success: false,
         message: "Product list is empty. Please provide at least one product.",
       });
     }
     // await productModel.deleteMany({});
     const savedProducts = await productModel.insertMany(productData);
     res.status(200).json({
+      success: true,
       message: `${savedProducts.length} products uploaded successfully.`,
       data: savedProducts,
     });
   } catch (err) {
     console.error("❌ Error uploading products:", err.message);
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      message: err.message });
   }
 });
 
-// 📝 Update product by ID 
-app.put("/api/product/:id", async (req, res) => {
-
+// ✅📝 UPDATE PRODUCT BY ID (🔐 ADMIN ONLY)
+//                                                👇🛡️ Middleware → allow only admins 
+app.put("/api/product/:id", isAuthenticatedUser, isAdmin,async (req, res) => {
+  //                     🔐 ☝️ (Middleware → ensures user is logged in
+ 
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
-    }
-    let updatedProduct = await productModel.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,           // return updated document
-        runValidators: true  // validate data before updating
+      // ------------------------------------------------------------
+      // 🔍 1️⃣ Validate product ID format
+      // ------------------------------------------------------------
+      // → Prevents MongoDB CastError
+      // → Checks if ID is a valid MongoDB ObjectId
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid product ID"
+        });
       }
-    );
-    if (!updatedProduct) {
-      return res.status(404).json({ message: "Product not found" });
+  // mongoose.Types.ObjectId.isValid(...)
+  //   This function checks:
+  //       “Does this string look like a real MongoDB ObjectId?”
+  //       Rules of a valid ObjectId:
+  //        Exactly 24 characters
+  //        Hexadecimal characters only (0-9 and a-f)
+
+      // ------------------------------------------------------------
+      // 💾 2️⃣ Update product in database
+      // ------------------------------------------------------------
+      // → req.params.id = product ID from URL
+      // → req.body = fields to update
+      // → new: true → return updated document
+      // → runValidators: true → apply schema validation
+      const updatedProduct = await productModel.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        {
+          new: true,
+          runValidators: true
+        }
+      );
+
+      // ------------------------------------------------------------
+      // ❌ 3️⃣ Handle product not found
+      // ------------------------------------------------------------
+      if (!updatedProduct) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found"
+        });
+      }
+
+      // ------------------------------------------------------------
+      // ✅ 4️⃣ Send success response
+      // ------------------------------------------------------------
+      return res.status(200).json({
+        success: true,
+        message: "Product updated successfully",
+        product: updatedProduct
+      });
+
+    } catch (err) {
+      // ------------------------------------------------------------
+      // ❌ 5️⃣ Handle server or validation errors
+      // ------------------------------------------------------------
+      return res.status(400).json({
+        success: false,
+        message: err.message
+      });
     }
-
-    return res.status(200).json({
-      message: "Product updated successfully",
-      product: updatedProduct
-    });
-
-  } catch (err) {
-    return res.status(400).json({ message: err.message });
   }
+);
 
 
-})
+// ✅🗑️ delete product by ID(🔐 ADMIN ONLY)
+//                                                👇🛡️ Middleware → allow only admins  
+app.delete("/api/product/:id", isAuthenticatedUser, isAdmin, async (req, res) => {
+  //                          🔐 ☝️ (Middleware → ensures user is logged in
 
-// 🗑️ delete product by ID 
-app.delete("/api/product/:id", async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid product ID" });
     }
+      // mongoose.Types.ObjectId.isValid(...)
+  //   This function checks:
+  //       “Does this string look like a real MongoDB ObjectId?”
+  //       Rules of a valid ObjectId:
+  //        Exactly 24 characters
+  //        Hexadecimal characters only (0-9 and a-f)
+
     const deletedProduct = await productModel.findByIdAndDelete(req.params.id);
 
     if (!deletedProduct) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found" });
     }
 
     res.status(200).json({
+      success: true,
       message: "Product deleted successfully",
       product: deletedProduct
     });
 
   } catch (err) {
-    return res.status(400).json({ message: err.message });
+    return res.status(400).json({
+      success: false,
+       message: err.message });
   }
 })
 
-// 🔍 Search product API old search
+//  Search product API old search
 // app.get("/api/products/search", async (req, res) => {
 
 //   // {🎯 What This Search API Covers
@@ -1193,7 +1298,7 @@ app.delete("/api/product/:id", async (req, res) => {
 
 // })
 
-// 🔍 ADVANCED SEARCH + FILTER + PAGINATION
+// ✅🔍 ADVANCED SEARCH + FILTER + PAGINATION
 app.get("/api/products/advanced-search", async (req, res) => {
 
   // {What this Advanced API Can Do:
@@ -1337,7 +1442,7 @@ app.get("/api/products/advanced-search", async (req, res) => {
 
     // 📌 Send paginated response back to the frontend
     res.status(200).json({
-
+      success: true,
       // 🔢 Current page number (from ?page=1)
       page,
 
@@ -1356,7 +1461,9 @@ app.get("/api/products/advanced-search", async (req, res) => {
 
 
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ 
+      success: false,
+      message: err.message });
   }
 
 })
@@ -1471,76 +1578,124 @@ const orderSchema = new mongoose.Schema({
 
 const orderModel = mongoose.model("order", orderSchema);
 
-// ✅ Create New Order (User)
-app.post("/api/orders", isAuthenticatedUser, async (req, res) => {
-  try {
-    const { orderItems, shippingAddress, totalPrice } = req.body;
+// ✅ CREATE NEW ORDER (LOGGED-IN USER) + UPDATE PRODUCT STOCK
+app.post("/api/orders",isAuthenticatedUser,async (req, res) => {
+    try {
+      // ------------------------------------------------------------
+      // 📥 1️⃣ Extract order details from request body
+      // ------------------------------------------------------------
+      const { orderItems, shippingAddress, totalPrice } = req.body;
 
-    // ------------------------------------------------------------
-    // 1️⃣ Validate order items
-    // ------------------------------------------------------------
-    if (!orderItems || orderItems.length === 0) {
-      return res.status(400).json({
+      // ------------------------------------------------------------
+      // ❌ 2️⃣ Validate order items
+      // ------------------------------------------------------------
+      // → Order must contain at least one product
+      if (!orderItems || orderItems.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Order items are required"
+        });
+      }
+
+      // ------------------------------------------------------------
+      // ❌ 3️⃣ Validate shipping address
+      // ------------------------------------------------------------
+      // → All address fields are mandatory
+      if (
+        !shippingAddress ||
+        !shippingAddress.address ||
+        !shippingAddress.city ||
+        !shippingAddress.state ||
+        !shippingAddress.pincode
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Complete shipping address is required"
+        });
+      }
+
+      // ------------------------------------------------------------
+      // ❌ 4️⃣ Validate total price
+      // ------------------------------------------------------------
+      // → Total price must be greater than 0
+      if (!totalPrice || totalPrice <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Total price must be greater than 0"
+        });
+      }
+
+      // ------------------------------------------------------------
+      // 📦 5️⃣ Check product stock & update quantity
+      // ------------------------------------------------------------
+      // → Loop through each ordered item
+      for (let item of orderItems) {
+
+        // Find product by ID
+        const product = await productModel.findById(item.product);
+
+        // ❌ If product does not exist
+        if (!product) {
+          return res.status(404).json({
+            success: false,
+            message: "Product not found"
+          });
+        }
+
+        // ❌ If not enough stock
+        if (product.quantity < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Not enough stock for ${product.name}`
+          });
+        }
+
+        // ➖ Reduce product stock
+        product.quantity -= item.quantity;
+
+        // ❌ If stock becomes zero → mark as out of stock
+        if (product.quantity === 0) {
+          product.availability = "Out of Stock";
+        }
+
+        // 💾 Save updated product stock
+        await product.save();
+      }
+
+      // ------------------------------------------------------------
+      // 🧾 6️⃣ Create order document in database
+      // ------------------------------------------------------------
+      const order = await orderModel.create({
+        user: req.user._id,        // logged-in user ID
+        orderItems,                // ordered products
+        shippingAddress,           // delivery address
+        totalPrice                 // total order amount
+      });
+
+      // ------------------------------------------------------------
+      // ✅ 7️⃣ Send success response
+      // ------------------------------------------------------------
+      res.status(201).json({
+        success: true,
+        message: "Order placed successfully",
+        order
+      });
+
+    } catch (error) {
+      // ------------------------------------------------------------
+      // ❌ 8️⃣ Handle server errors
+      // ------------------------------------------------------------
+      res.status(500).json({
         success: false,
-        message: "Order items are required"
+        message: error.message
       });
     }
-
-    // ------------------------------------------------------------
-    // 2️⃣ Validate shipping address
-    // ------------------------------------------------------------
-    if (
-      !shippingAddress ||
-      !shippingAddress.address ||
-      !shippingAddress.city ||
-      !shippingAddress.state ||
-      !shippingAddress.pincode
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Complete shipping address is required"
-      });
-    }
-
-    // ------------------------------------------------------------
-    // 3️⃣ Validate total price
-    // ------------------------------------------------------------
-    if (!totalPrice || totalPrice <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Total price must be greater than 0"
-      });
-    }
-
-    // ------------------------------------------------------------
-    // 4️⃣ Create order
-    // ------------------------------------------------------------
-    const order = await orderModel.create({
-      user: req.user._id,          // logged-in user
-      orderItems,
-      shippingAddress,
-      totalPrice
-    });
-
-    // ------------------------------------------------------------
-    // 5️⃣ Success response
-    // ------------------------------------------------------------
-    res.status(201).json({
-      success: true,
-      message: "Order placed successfully",
-      order
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
   }
-});
+);
+
 
 // ✅ Get My Orders (Logged-in User)
-app.get("/api/orders/my", isAuthenticatedUser, async (req, res) => { 
+app.get("/api/orders/my", isAuthenticatedUser, async (req, res) => {
   try {
     // ------------------------------------------------------------
     // 1️⃣ Find orders of logged-in user
@@ -1565,73 +1720,199 @@ app.get("/api/orders/my", isAuthenticatedUser, async (req, res) => {
   }
 });
 
+
 // ✅ GET SINGLE ORDER (USER / ADMIN)
-app.get("/api/orders/:id",isAuthenticatedUser,async (req, res) => {
-                    // 🔐 Middleware → ensure user is logged in
-    // ❌ When will this API reject the request?
-    //         User not logged in
-    //         Order ID does not exist
-    //         User is not owner AND not admin
-    //         Invalid order ID
-    try {
-      // ------------------------------------------------------------
-      // 🔍 1️⃣ Find order by ID
-      // ------------------------------------------------------------
-      // → req.params.id contains the order ID from URL
-      // → populate("user") fetches user details using ObjectId + ref
-      // → only "name" and "email" are returned
-      const order = await orderModel
-        .findById(req.params.id)
-        .populate("user", "name email");
+app.get("/api/orders/:id", isAuthenticatedUser, async (req, res) => {
+  // 🔐 Middleware → ensure user is logged in
+  // ❌ When will this API reject the request?
+  //         User not logged in
+  //         Order ID does not exist
+  //         User is not owner AND not admin
+  //         Invalid order ID
+  try {
+    // ------------------------------------------------------------
+    // 🔍 1️⃣ Find order by ID
+    // ------------------------------------------------------------
+    // → req.params.id contains the order ID from URL
+    // → populate("user") fetches user details using ObjectId + ref
+    // → only "name" and "email" are returned
+    const order = await orderModel
+      .findById(req.params.id)
+      .populate("user", "name email");
 
-      // ------------------------------------------------------------
-      // ❌ 2️⃣ If order does not exist
-      // ------------------------------------------------------------
-      if (!order) {
-        return res.status(404).json({
-          success: false,
-          message: "Order not found"
-        });
-      }
-
-      // ------------------------------------------------------------
-      // 🔐 3️⃣ Authorization check
-      // ------------------------------------------------------------
-      // → Normal user can view ONLY their own order
-      // → Admin can view ANY order
-      // → Compare order.user._id with logged-in req.user._id
-      if (
-        order.user._id.toString() !== req.user._id.toString() &&
-        req.user.role !== "admin"
-      ) {
-        return res.status(403).json({
-          success: false,
-          message: "Not authorized to view this order"
-        });
-      }
-
-      // ------------------------------------------------------------
-      // ✅ 4️⃣ Send success response
-      // ------------------------------------------------------------
-      res.status(200).json({
-        success: true,
-        order // full order details (with populated user)
-      });
-
-    } catch (error) {
-      // ------------------------------------------------------------
-      // ❌ 5️⃣ Handle invalid ObjectId or server error
-      // ------------------------------------------------------------
-      res.status(500).json({
+    // ------------------------------------------------------------
+    // ❌ 2️⃣ If order does not exist
+    // ------------------------------------------------------------
+    if (!order) {
+      return res.status(404).json({
         success: false,
-        message: "Invalid order ID"
+        message: "Order not found"
       });
     }
+
+    // ------------------------------------------------------------
+    // 🔐 3️⃣ Authorization check
+    // ------------------------------------------------------------
+    // → Normal user can view ONLY their own order
+    // → Admin can view ANY order
+    // → Compare order.user._id with logged-in req.user._id
+    if (
+      order.user._id.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this order"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // ✅ 4️⃣ Send success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,
+      order // full order details (with populated user)
+    });
+
+  } catch (error) {
+    // ------------------------------------------------------------
+    // ❌ 5️⃣ Handle invalid ObjectId or server error
+    // ------------------------------------------------------------
+    res.status(500).json({
+      success: false,
+      message: "Invalid order ID"
+    });
   }
+}
 );
 
 
+// ✅ Get All Orders (Admin)
+app.get("/api/admin/orders", isAuthenticatedUser, isAdmin, async (req, res) => {
+  try {
+    // ------------------------------------------------------------
+    // 1️⃣ Fetch all orders with user details
+    // ------------------------------------------------------------
+    const orders = await orderModel
+      .find()
+      .populate("user", "name email")
+      .sort({ createdAt: -1 }); // latest orders first
 
+    let totalAmount = 0;
+    orders.forEach((i) => {
+      totalAmount = totalAmount + i.totalPrice
+    })
+    // ------------------------------------------------------------
+    // 2️⃣ Success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      totalAmount,
+      orders
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+
+// ✅ Update Order Status (Admin)
+app.put("/api/admin/orders/:id", isAuthenticatedUser, isAdmin, async (req, res) => {
+  // {What this API does (Simple)
+
+  //     1️⃣ Only admin can use this API
+  //     → Normal users are blocked.
+
+  //     2️⃣ Admin sends new order status
+  //     → Example: processing, shipped, delivered, cancelled.
+
+  //     3️⃣ Checks if the status is valid
+  //     → Blocks wrong values.
+
+  //     4️⃣ Finds the order by ID
+  //     → If order not found → error.
+
+  //     5️⃣ Stops changes if order is already delivered
+  //     → Delivered orders cannot be changed.
+
+  //     6️⃣ Updates the order status
+  //     → Saves new status in database.
+
+  //     7️⃣ Adds delivery date when delivered
+  //     → Sets deliveredAt automatically.
+
+  //     8️⃣ Returns updated order
+  //     → Admin sees latest order details.
+  // }
+  
+  try {
+    const { orderStatus } = req.body;
+
+    // ------------------------------------------------------------
+    // 1️⃣ Validate order status
+    // ------------------------------------------------------------
+    const validStatuses = ["processing", "shipped", "delivered", "cancelled"];
+    if (!orderStatus || !validStatuses.includes(orderStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order status"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 2️⃣ Find order by ID
+    // ------------------------------------------------------------
+    const order = await orderModel.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 3️⃣ Prevent updating delivered orders
+    // ------------------------------------------------------------
+    if (order.orderStatus === "delivered") {
+      return res.status(400).json({
+        success: false,
+        message: "Order has already been delivered and cannot be updated"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 4️⃣ Update order status
+    // ------------------------------------------------------------
+    order.orderStatus = orderStatus;
+
+    if (orderStatus === "delivered") {
+      order.deliveredAt = Date.now();
+    }
+
+    await order.save();
+
+    // ------------------------------------------------------------
+    // 5️⃣ Success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      order
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Invalid order ID"
+    });
+  }
+});
 
 
 

@@ -1,6 +1,47 @@
 [
   {
     "_id": {
+      "$oid": "6948da19813ce219279b48ba"
+    },
+    "user": {
+      "$oid": "6932bb63b717681477f00705"
+    },
+    "orderItems": [
+      {
+        "product": {
+          "$oid": "691577730cfc8298de4e803c"
+        },
+        "name": "iPhone 15",
+        "price": 60000,
+        "quantity": 1,
+        "image": "https://image-url.com/iphone15.jpg",
+        "_id": {
+          "$oid": "6948da19813ce219279b48bb"
+        }
+      }
+    ],
+    "shippingAddress": {
+      "address": "Main Road",
+      "city": "Thoothukudi",
+      "state": "Tamil Nadu",
+      "pincode": "628002"
+    },
+    "totalPrice": 60000,
+    "paymentStatus": "pending",
+    "orderStatus": "processing",
+    "createdAt": {
+      "$date": "2025-12-22T05:41:45.578Z"
+    },
+    "updatedAt": {
+      "$date": "2025-12-22T05:41:45.578Z"
+    },
+    "__v": 0
+  },
+
+
+
+  {
+    "_id": {
       "$oid": "691f2ed40013041f5d9fea7d"
     },
     "name": "Gokul",
@@ -17,22 +58,30 @@
     "__v": 0
   },
   {
-    "name": "Apple iPhone 15",
-    "brand": "Apple",
-    "originalPrice": 89999,
-    "offerPrice": 79999,
+    "_id": {
+      "$oid": "691577730cfc8298de4e803c"
+    },
+    "name": "OnePlus",
+    "brand": "OnePlus",
+    "originalPrice": 65000,
+    "offerPrice": 64999,
+    "quantity": 4,
     "availability": "In Stock",
     "specifications": {
-      "Display": "6.1-inch Super Retina XDR",
-      "Processor": "A16 Bionic",
-      "Camera": "48MP + 12MP",
-      "Battery": "3279mAh",
-      "Storage": "128GB",
-      "RAM": "6GB"
+      "Display": "6.7-inch AMOLED 120Hz",
+      "Processor": "Snapdragon 8 Gen 3",
+      "Camera": "50MP + 48MP + 64MP",
+      "Battery": "5400mAh",
+      "Storage": "256GB",
+      "RAM": "12GB"
     },
-    "description": "Experience the next generation performance with A16 Bionic chip and dynamic island.",
-    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-blue?wid=470&hei=556&fmt=png-alpha&.v=1692923814481"
+    "description": "Super fast charging and brilliant AMOLED display powered by Snapdragon 8 Gen 3.",
+    "image": "https://image01.oneplus.net/ebp/202312/26/1-m00-5b-bc-cpgm8wbl_mcadxvvaalg_ljfpo0362.png",
+    "__v": 0
   },
+
+
+
   {
     "name": "Samsung Galaxy S24",
     "brand": "Samsung",
@@ -50,6 +99,12 @@
     "description": "Flagship performance with pro-grade camera and seamless One UI experience.",
     "image": "https://images.samsung.com/is/image/samsung/p6pim/in/2401/gallery/in-galaxy-s24-s928-sm-s928bzacins-thumb-539331227?$320_320_PNG$"
   },
+
+
+
+
+
+  
   {
     "name": "OnePlus 12",
     "brand": "OnePlus",

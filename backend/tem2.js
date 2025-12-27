@@ -1,36 +1,44 @@
-{
-  📁 Auth
-  - Register
-  - Login
-  - Logout
-  - Forgot Password
-  - Reset Password
-  - Change Password
+const productSchema = new mongoose.Schema({
+  name: String,
+  brand: String,
+  originalPrice: Number,
+  offerPrice: Number,
+  quantity: Number,
+  availability: String,
+  specifications: Object,
+  description: String,
+  image: String,
 
-📁 User
-  - Get Profile
-  - Update Profile
+  // ⭐ Reviews
+  reviews: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+        required: true
+      },
+      name: String, // user name (snapshot)
+      rating: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 5
+      },
+      comment: {
+        type: String,
+        required: true
+      }
+    }
+  ],
 
-📁 Admin - Users
-  - Get All Users
-  - Get Single User
-  - Update User Role
-  - Delete User
+  averageRating: {
+    type: Number,
+    default: 0
+  },
 
-📁 Products
-  - Get All Products
-  - Get Single Product
-  - Create Product (Admin)
-  - Update Product (Admin)
-  - Delete Product (Admin)
+  numOfReviews: {
+    type: Number,
+    default: 0
+  }
 
-📁 Orders
-  - Create Order
-  - Get My Orders
-  - Get Single Order
-
-📁 Admin - Orders
-  - Get All Orders
-  - Update Order Status
-
-}
+}, { timestamps: true });

@@ -1071,7 +1071,7 @@ let productModel = mongoose.model("productsList", productSchema)
 // ✔ isAuthenticatedUser = user must be logged in
 // ✔ isAdmin = user must be admin
 // ✅ Get all products
-app.get("/api/products", isAuthenticatedUser, async (req, res) => {
+app.get("/api/products", async (req, res) => {
   try {
     const products = await productModel.find();
 

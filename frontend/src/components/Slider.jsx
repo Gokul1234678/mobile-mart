@@ -118,7 +118,7 @@ export default function Slider() {
     </div>
     
        
-    <p class="quote-custom container text-center my-5">Find the Perfect Fit for Your Pocket</p>
+    <p className="quote-custom container text-center my-5">Find the Perfect Fit for Your Pocket</p>
    
     </>
   );

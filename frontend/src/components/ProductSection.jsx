@@ -12,8 +12,8 @@ const ProductSection = () => {
     async function fetchProducts() {
       try {
         let res = await axiosInstance.get("/api/products");
-        // console.log(res);
-        setProducts(res.data)
+        console.log(res);
+        setProducts(res.data.products)
 
       } catch (err) {
         console.error("Error fetching products:", err);

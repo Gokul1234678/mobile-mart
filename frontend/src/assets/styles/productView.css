@@ -1,0 +1,197 @@
+/* produt view start */
+#root {
+    background-color: var(--darkwhite);
+    /* background-color: black; */
+    /* font-family: inter,Arial; */
+}
+
+.cus-font {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.product-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-item img {
+    height: 90vh;
+    max-height: 600px;
+    object-fit: contain;
+    border-radius: 20px;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1);
+    /* Change icon color to black */
+
+}
+
+
+
+.btn-add-to-cart {
+    background-color: var(--voilet);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+}
+
+.btn-add-to-cart:hover {
+    background-color: #411a9e;
+    color: white;
+}
+
+.btn-buy {
+    background-color: var(--green);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+}
+
+.btn-buy:hover {
+    background-color: #218838;
+    color: white;
+}
+
+.product-details ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.product-details ul li {
+    margin-bottom: 10px;
+}
+
+.text-green {
+    color: var(--green);
+}
+
+
+/* ================================
+   QUANTITY SELECTOR STYLES
+   ================================ */
+
+/* Wrapper alignment */
+.quantity-wrapper {
+  margin-top: 10px;
+}
+
+/* Common button styles */
+.qty-btn {
+  width: 45px;
+  height: 45px;
+  font-size: 1.6rem;          /* Bigger + and - */
+  font-weight: bold;
+  border-radius: 50%;         /* Circular buttons */
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Decrease button (RED) */
+.qty-decrease {
+  background-color: #dc3545;  /* Bootstrap danger red */
+}
+
+.qty-decrease:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+/* Increase button (GREEN) */
+.qty-increase {
+  background-color: #28a745;  /* Bootstrap success green */
+}
+
+.qty-increase:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+/* Quantity number */
+.qty-value {
+  font-size: 1.5rem;          /* Bigger quantity number */
+  font-weight: 600;
+  min-width: 30px;
+  text-align: center;
+}
+
+/* Disable look when button is inactive (optional future use) */
+.qty-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ================================
+   PRODUCT VIEW — GLOBAL FONT SCALE
+   ================================ */
+
+.product-view-container {
+  font-size: 1.1rem; /* ⬆️ increases ALL text proportionally */
+  line-height: 1.7;
+}
+
+/* Headings */
+.product-view-container h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.product-view-container h3 {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.product-view-container h5 {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+/* Paragraphs & lists */
+.product-view-container p,
+.product-view-container li,
+.product-view-container span {
+  font-size: 1.05rem;
+}
+
+/* Product ID text */
+.product-view-container .text-muted {
+  font-size: 0.95rem;
+}
+
+/* Price emphasis */
+.product-view-container .text-success {
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+/* Mobile tuning */
+@media (max-width: 768px) {
+  .product-view-container {
+    font-size: 1.05rem;
+  }
+
+  .product-view-container h2 {
+    font-size: 1.7rem;
+  }
+}
+
+
+@media screen and (max-width: 480px) {
+    .carousel-item img {
+        height: 50vh;
+
+    }
+
+}
+
+/* produt view end */

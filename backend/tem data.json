@@ -57,273 +57,235 @@
     },
     "__v": 0
   },
-  {
-    "_id": {
-      "$oid": "691577730cfc8298de4e803c"
-    },
-    "name": "OnePlus",
-    "brand": "OnePlus",
-    "originalPrice": 65000,
-    "offerPrice": 64999,
-    "quantity": 4,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.7-inch AMOLED 120Hz",
-      "Processor": "Snapdragon 8 Gen 3",
-      "Camera": "50MP + 48MP + 64MP",
-      "Battery": "5400mAh",
-      "Storage": "256GB",
-      "RAM": "12GB"
-    },
-    "description": "Super fast charging and brilliant AMOLED display powered by Snapdragon 8 Gen 3.",
-    "image": "https://image01.oneplus.net/ebp/202312/26/1-m00-5b-bc-cpgm8wbl_mcadxvvaalg_ljfpo0362.png",
-    "__v": 0
-  },
-
-
-
-  {
-    "name": "Samsung Galaxy S24",
-    "brand": "Samsung",
-    "originalPrice": 84999,
-    "offerPrice": 74999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.2-inch Dynamic AMOLED 2X",
-      "Processor": "Snapdragon 8 Gen 3",
-      "Camera": "50MP + 12MP + 10MP",
-      "Battery": "4000mAh",
-      "Storage": "256GB",
-      "RAM": "8GB"
-    },
-    "description": "Flagship performance with pro-grade camera and seamless One UI experience.",
-    "image": "https://images.samsung.com/is/image/samsung/p6pim/in/2401/gallery/in-galaxy-s24-s928-sm-s928bzacins-thumb-539331227?$320_320_PNG$"
-  },
-
 
 
 
 
   
   {
-    "name": "OnePlus 12",
-    "brand": "OnePlus",
-    "originalPrice": 69999,
-    "offerPrice": 64999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.7-inch AMOLED 120Hz",
-      "Processor": "Snapdragon 8 Gen 3",
-      "Camera": "50MP + 48MP + 64MP",
-      "Battery": "5400mAh",
-      "Storage": "256GB",
-      "RAM": "12GB"
+        "specifications": {
+            "Display": "6.1 inch OLED",
+            "Processor": "A16 Bionic",
+            "Camera": "48MP Rear, 12MP Front",
+            "Battery": "4200mAh",
+            "Storage": "128GB",
+            "RAM": "6GB"
+        },
+        "_id": "6954b47b89870872806b6b03",
+        "name": "Apple iPhone 15",
+        "brand": "Apple",
+        "originalPrice": 79999,
+        "offerPrice": 74999,
+        "quantity": 20,
+        "availability": "In Stock",
+        "description": "Apple iPhone 15 with powerful A16 chip and premium camera.",
+        "images": [
+            "https://picsum.photos/seed/iphone15a/600/600",
+            "https://picsum.photos/seed/iphone15b/600/600",
+            "https://picsum.photos/seed/iphone15c/600/600"
+        ],
+        "averageRating": 5,
+        "numOfReviews": 1,
+        "reviews": [
+            {
+                "user": "6932bb63b717681477f00705",
+                "name": "admin",
+                "rating": 5,
+                "comment": "great battery life!",
+                "_id": "6954bdca89870872806b6b15"
+            }
+        ],
+        "__v": 1,
+        "createdAt": "2025-12-31T05:28:27.772Z",
+        "updatedAt": "2025-12-31T06:08:46.967Z"
     },
-    "description": "Super fast charging and brilliant AMOLED display powered by Snapdragon 8 Gen 3.",
-    "image": "https://image01.oneplus.net/ebp/202312/26/1-m00-5b-bc-cpgm8wbl_mcadxvvaalg_ljfpo0362.png"
-  },
   {
-    "name": "Google Pixel 8",
-    "brand": "Google",
-    "originalPrice": 82999,
-    "offerPrice": 76999,
+    "name": "Samsung Galaxy S23",
+    "brand": "Samsung",
+    "originalPrice": 74999,
+    "offerPrice": 69999,
+    "quantity": 15,
     "availability": "In Stock",
+    "images": [
+      "https://picsum.photos/seed/s23a/600/600",
+      "https://picsum.photos/seed/s23b/600/600"
+    ],
     "specifications": {
-      "Display": "6.2-inch OLED",
-      "Processor": "Google Tensor G3",
-      "Camera": "50MP + 12MP",
-      "Battery": "4575mAh",
-      "Storage": "128GB",
-      "RAM": "8GB"
-    },
-    "description": "Capture real-life moments with Pixel’s advanced AI-powered photography.",
-    "image": "https://store.google.com/product/images/phone_pixel_8_product_image_1.png"
-  },
-  {
-    "name": "Xiaomi 14 Pro",
-    "brand": "Xiaomi",
-    "originalPrice": 59999,
-    "offerPrice": 54999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.7-inch AMOLED 120Hz",
-      "Processor": "Snapdragon 8 Gen 3",
-      "Camera": "50MP Triple Leica Lens",
-      "Battery": "5000mAh",
-      "Storage": "256GB",
-      "RAM": "12GB"
-    },
-    "description": "Leica-powered camera with Snapdragon 8 Gen 3 and stunning design.",
-    "image": "https://i02.appmifile.com/732_operator_sg/18/11/2023/8df7f7d9b1bbfa4d0e7b1b123a77a7e1.png"
-  },
-  {
-    "name": "Vivo X100 Pro",
-    "brand": "Vivo",
-    "originalPrice": 69999,
-    "offerPrice": 64999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.78-inch AMOLED",
-      "Processor": "Dimensity 9300",
-      "Camera": "50MP + 50MP + 64MP",
-      "Battery": "5100mAh",
-      "Storage": "512GB",
-      "RAM": "12GB"
-    },
-    "description": "Premium smartphone with flagship camera powered by ZEISS optics.",
-    "image": "https://www.vivoglobal.ph/wp-content/uploads/2023/11/X100Pro_Black.png"
-  },
-  {
-    "name": "Realme GT 6 Pro",
-    "brand": "Realme",
-    "originalPrice": 49999,
-    "offerPrice": 44999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.7-inch AMOLED 144Hz",
-      "Processor": "Snapdragon 8s Gen 3",
-      "Camera": "50MP Triple Camera",
-      "Battery": "5000mAh",
-      "Storage": "256GB",
-      "RAM": "12GB"
-    },
-    "description": "Ultra-fast performance with 144Hz display and 100W SuperDart charging.",
-    "image": "https://image01.realme.net/general/20240604/1717482099863.png"
-  },
-  {
-    "name": "Nothing Phone (2)",
-    "brand": "Nothing",
-    "originalPrice": 49999,
-    "offerPrice": 45999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.7-inch OLED",
-      "Processor": "Snapdragon 8+ Gen 1",
-      "Camera": "50MP + 50MP",
+      "Display": "6.6 inch AMOLED",
+      "Processor": "Snapdragon 8 Gen 2",
+      "Camera": "50MP Rear, 12MP Front",
       "Battery": "4700mAh",
       "Storage": "256GB",
       "RAM": "12GB"
     },
-    "description": "Unique transparent design with Glyph interface and clean Nothing OS.",
-    "image": "https://images.ctfassets.net/wcfotm6rrl7u/2zDLoCU6mYuk7pEwaoeiD1/1ffcf9f5693c02f37b45c43dfdd245e3/NP2-White.png"
+    "description": "Samsung Galaxy S23 flagship with top-tier performance."
   },
   {
-    "name": "iQOO 12 5G",
-    "brand": "iQOO",
-    "originalPrice": 59999,
-    "offerPrice": 54999,
+    "name": "Poco M4 Pro",
+    "brand": "Poco",
+    "originalPrice": 24999,
+    "offerPrice": 21999,
+    "quantity": 30,
     "availability": "In Stock",
+    "images": [
+      "https://picsum.photos/seed/pocom4a/600/600",
+      "https://picsum.photos/seed/pocom4b/600/600"
+    ],
     "specifications": {
-      "Display": "6.78-inch AMOLED 144Hz",
-      "Processor": "Snapdragon 8 Gen 3",
-      "Camera": "50MP Triple Camera",
+      "Display": "6.6 inch AMOLED",
+      "Processor": "Dimensity 810",
+      "Camera": "64MP Rear, 16MP Front",
+      "Battery": "5000mAh",
+      "Storage": "128GB",
+      "RAM": "6GB"
+    },
+    "description": "Poco M4 Pro with AMOLED display and long battery life."
+  },
+  {
+    "name": "OnePlus 11R",
+    "brand": "OnePlus",
+    "originalPrice": 45999,
+    "offerPrice": 41999,
+    "quantity": 12,
+    "availability": "In Stock",
+    "images": [
+      "https://picsum.photos/seed/oneplus11ra/600/600",
+      "https://picsum.photos/seed/oneplus11rb/600/600"
+    ],
+    "specifications": {
+      "Display": "6.7 inch AMOLED",
+      "Processor": "Snapdragon 8+ Gen 1",
+      "Camera": "50MP Rear, 16MP Front",
       "Battery": "5000mAh",
       "Storage": "256GB",
-      "RAM": "12GB"
-    },
-    "description": "Built for gamers with lightning-fast Snapdragon 8 Gen 3 and 144Hz refresh rate.",
-    "image": "https://www.iqoo.com/in/images/iqoo-12-5g.png"
-  },
-  {
-    "name": "Motorola Edge 50 Ultra",
-    "brand": "Motorola",
-    "originalPrice": 59999,
-    "offerPrice": 54999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.67-inch pOLED 144Hz",
-      "Processor": "Snapdragon 8 Gen 3",
-      "Camera": "200MP Triple Camera",
-      "Battery": "4600mAh",
-      "Storage": "256GB",
-      "RAM": "12GB"
-    },
-    "description": "Flagship-grade design with 200MP camera and pOLED display.",
-    "image": "https://motorolaus.vtexassets.com/arquivos/ids/161032-800-auto?width=800&height=auto&aspect=true"
-  },
-  {
-    "name": "Oppo Find X7 Pro",
-    "brand": "Oppo",
-    "originalPrice": 89999,
-    "offerPrice": 84999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.8-inch AMOLED",
-      "Processor": "Snapdragon 8 Gen 3",
-      "Camera": "50MP + 64MP + 48MP",
-      "Battery": "5000mAh",
-      "Storage": "512GB",
       "RAM": "16GB"
     },
-    "description": "Powerful flagship with stunning design and pro-grade camera system.",
-    "image": "https://image.oppo.com/content/dam/oppo/product-asset-library/find-x7-pro/global/Find-X7-Pro-main.png"
+    "description": "OnePlus 11R flagship killer with fast performance."
   },
   {
-    "name": "Infinix GT 20 Pro",
-    "brand": "Infinix",
-    "originalPrice": 29999,
-    "offerPrice": 25999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.67-inch AMOLED 120Hz",
-      "Processor": "Dimensity 8200",
-      "Camera": "108MP + 2MP",
-      "Battery": "5000mAh",
-      "Storage": "256GB",
-      "RAM": "8GB"
-    },
-    "description": "Gaming beast from Infinix with AMOLED display and strong performance.",
-    "image": "https://fdn2.gsmarena.com/vv/pics/infinix/infinix-gt-20-pro-1.jpg"
-  },
-  {
-    "name": "POCO F6 Pro",
-    "brand": "POCO",
-    "originalPrice": 42999,
-    "offerPrice": 38999,
-    "availability": "In Stock",
-    "specifications": {
-      "Display": "6.67-inch AMOLED 120Hz",
-      "Processor": "Snapdragon 8 Gen 2",
-      "Camera": "64MP Triple Camera",
-      "Battery": "5160mAh",
-      "Storage": "256GB",
-      "RAM": "12GB"
-    },
-    "description": "Flagship killer with Snapdragon 8 Gen 2 at an unbeatable price.",
-    "image": "https://i02.appmifile.com/293_operator_sg/23/05/2024/d0efb9b982dc9131b994bb9f167c734d.png"
-  },
-  {
-    "name": "Tecno Phantom X3",
-    "brand": "Tecno",
+    "name": "Realme GT Neo 3",
+    "brand": "Realme",
     "originalPrice": 39999,
     "offerPrice": 34999,
-    "availability": "In Stock",
+    "quantity": 0,
+    "availability": "Out of Stock",
+    "images": [
+      "https://picsum.photos/seed/realmegt3a/600/600",
+      "https://picsum.photos/seed/realmegt3b/600/600"
+    ],
     "specifications": {
-      "Display": "6.8-inch AMOLED",
-      "Processor": "Dimensity 8200",
-      "Camera": "50MP + 50MP + 32MP",
-      "Battery": "4800mAh",
+      "Display": "6.7 inch AMOLED",
+      "Processor": "Dimensity 8100",
+      "Camera": "50MP Rear, 16MP Front",
+      "Battery": "4500mAh",
+      "Storage": "128GB",
+      "RAM": "8GB"
+    },
+    "description": "Realme GT Neo 3 with fast charging support."
+  },
+
+  {
+    "name": "Vivo V29",
+    "brand": "Vivo",
+    "originalPrice": 36999,
+    "offerPrice": 32999,
+    "quantity": 18,
+    "availability": "In Stock",
+    "images": [
+      "https://picsum.photos/seed/vivov29a/600/600"
+    ],
+    "specifications": {
+      "Display": "6.78 inch AMOLED",
+      "Processor": "Snapdragon 778G",
+      "Camera": "50MP Rear, 50MP Front",
+      "Battery": "4600mAh",
+      "Storage": "128GB",
+      "RAM": "8GB"
+    },
+    "description": "Vivo V29 with premium camera and design."
+  },
+
+  {
+    "name": "Oppo Reno 10",
+    "brand": "Oppo",
+    "originalPrice": 38999,
+    "offerPrice": 34999,
+    "quantity": 14,
+    "availability": "In Stock",
+    "images": [
+      "https://picsum.photos/seed/opporeno10/600/600"
+    ],
+    "specifications": {
+      "Display": "6.7 inch AMOLED",
+      "Processor": "Dimensity 7050",
+      "Camera": "64MP Rear, 32MP Front",
+      "Battery": "5000mAh",
       "Storage": "256GB",
       "RAM": "8GB"
     },
-    "description": "Premium design meets excellent performance with Dimensity 8200 chip.",
-    "image": "https://fdn2.gsmarena.com/vv/pics/tecno/tecno-phantom-x2-pro-1.jpg"
+    "description": "Oppo Reno 10 with stylish design and smooth UI."
   },
+
   {
-    "name": "Redmi Note 13 Pro+",
-    "brand": "Redmi",
+    "name": "iQOO Neo 7",
+    "brand": "iQOO",
     "originalPrice": 34999,
-    "offerPrice": 29999,
+    "offerPrice": 31999,
+    "quantity": 22,
     "availability": "In Stock",
+    "images": [
+      "https://picsum.photos/seed/iqooneo7/600/600"
+    ],
     "specifications": {
-      "Display": "6.67-inch AMOLED 120Hz",
-      "Processor": "Dimensity 7200 Ultra",
-      "Camera": "200MP + 8MP + 2MP",
+      "Display": "6.78 inch AMOLED",
+      "Processor": "Dimensity 9000+",
+      "Camera": "50MP Rear, 16MP Front",
       "Battery": "5000mAh",
+      "Storage": "128GB",
+      "RAM": "12GB"
+    },
+    "description": "iQOO Neo 7 focused on performance and gaming."
+  },
+
+  {
+    "name": "Redmi Note 12 Pro",
+    "brand": "Redmi",
+    "originalPrice": 29999,
+    "offerPrice": 26999,
+    "quantity": 25,
+    "availability": "In Stock",
+    "images": [
+      "https://picsum.photos/seed/redminote12/600/600"
+    ],
+    "specifications": {
+      "Display": "6.67 inch AMOLED",
+      "Processor": "Dimensity 1080",
+      "Camera": "50MP Rear, 16MP Front",
+      "Battery": "5000mAh",
+      "Storage": "128GB",
+      "RAM": "8GB"
+    },
+    "description": "Redmi Note 12 Pro with balanced performance."
+  },
+
+  {
+    "name": "Nothing Phone (2)",
+    "brand": "Nothing",
+    "originalPrice": 44999,
+    "offerPrice": 40999,
+    "quantity": 10,
+    "availability": "In Stock",
+    "images": [
+      "https://picsum.photos/seed/nothing2/600/600"
+    ],
+    "specifications": {
+      "Display": "6.7 inch OLED",
+      "Processor": "Snapdragon 8+ Gen 1",
+      "Camera": "50MP Rear, 32MP Front",
+      "Battery": "4700mAh",
       "Storage": "256GB",
       "RAM": "12GB"
     },
-    "description": "Feature-packed phone with 200MP camera and curved AMOLED display.",
-    "image": "https://i02.appmifile.com/42_operator_sg/06/10/2023/6f0f1f4bda507b13ee0e64cfb23b1c55.png"
+    "description": "Nothing Phone (2) with unique glyph interface."
   }
 ]

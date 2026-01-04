@@ -1017,11 +1017,14 @@ const productSchema = new mongoose.Schema({
     required: [true, "Please enter a description"],
     trim: true,
   },
-  image: {
-    type: String,
-    required: [true, "Please provide product image URL"],
-    trim: true,
-  },
+  images:
+    [
+      {
+        type: String,
+        required: [true, "Please provide product image URL"],
+        trim: true,
+      }
+    ],
 
   // ⭐ Reviews
   reviews: [
@@ -1069,8 +1072,9 @@ let productModel = mongoose.model("productsList", productSchema)
 
 
 // ✔ isAuthenticatedUser = user must be logged in
-// ✔ isAdmin = user must be admin
+
 // ✅ Get all products
+// app.get("/api/products", isAuthenticatedUser,async (req, res) => {
 app.get("/api/products", async (req, res) => {
   try {
     const products = await productModel.find();
@@ -1091,7 +1095,8 @@ app.get("/api/products", async (req, res) => {
 
 
 // ✅ Get single product by its ID
-app.get("/api/product/:id", isAuthenticatedUser, async (req, res) => {
+// app.get("/api/product/:id", isAuthenticatedUser, async (req, res) => {
+app.get("/api/product/:id", async (req, res) => {
   try {
     // ------------------------------------------------------------
     // 1️⃣ Validate MongoDB ObjectId
@@ -1120,6 +1125,9 @@ app.get("/api/product/:id", isAuthenticatedUser, async (req, res) => {
         message: "Product not found"
       });
     }
+
+    // this is only for testing purpose to test loading state in frontend
+    // await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate delay for testing loading states
 
     // ------------------------------------------------------------
     // 3️⃣ Success response
@@ -1517,7 +1525,7 @@ app.get("/api/products/advanced-search", async (req, res) => {
 
 // ✅ ⭐ ADD OR UPDATE PRODUCT REVIEW (LOGGED-IN USER)
 app.put("/api/products/:id/review", isAuthenticatedUser, async (req, res) => {
-  
+
   // { 🧠 What this API DOES (Command Points)
   //   • Allows a logged-in user to add a product review
   //   • Prevents duplicate reviews by same user
@@ -1533,7 +1541,7 @@ app.put("/api/products/:id/review", isAuthenticatedUser, async (req, res) => {
   //   • Maintain accurate average rating
   //   • Real e-commerce review behavior
   // }
-  
+
   try {
     // ------------------------------------------------------------
     // 📥 1️⃣ Extract review data from request body
@@ -1632,160 +1640,160 @@ app.put("/api/products/:id/review", isAuthenticatedUser, async (req, res) => {
 
 
 // ✅⭐ GET ALL REVIEWS FOR A PRODUCT by ID
-app.get("/api/products/:id/reviews",async (req, res) => {
-//   {🧠 What this API DOES 
-// • Fetches all reviews for a specific product
-// • Returns average rating
-// • Returns total number of reviews
-// • Returns full reviews list
-// • Does NOT require user login
+app.get("/api/products/:id/reviews", async (req, res) => {
+  //   {🧠 What this API DOES 
+  // • Fetches all reviews for a specific product
+  // • Returns average rating
+  // • Returns total number of reviews
+  // • Returns full reviews list
+  // • Does NOT require user login
 
-// 🎯 Why this API is USED
-// • Show product reviews on product detail page
-// • Display average star rating
-// • Display number of reviewers
-// • Build trust using customer feedback
-//   }
-    try {
-      // ------------------------------------------------------------
-      // 🔍 1️⃣ Find product by ID from URL
-      // ------------------------------------------------------------
-      // → req.params.id contains product ID
-      // → select() limits returned fields to reviews & rating info
-      const product = await productModel
-        .findById(req.params.id)
-        .select("reviews averageRating numOfReviews");
+  // 🎯 Why this API is USED
+  // • Show product reviews on product detail page
+  // • Display average star rating
+  // • Display number of reviewers
+  // • Build trust using customer feedback
+  //   }
+  try {
+    // ------------------------------------------------------------
+    // 🔍 1️⃣ Find product by ID from URL
+    // ------------------------------------------------------------
+    // → req.params.id contains product ID
+    // → select() limits returned fields to reviews & rating info
+    const product = await productModel
+      .findById(req.params.id)
+      .select("reviews averageRating numOfReviews");
 
-      // ------------------------------------------------------------
-      // ❌ 2️⃣ Handle product not found
-      // ------------------------------------------------------------
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          message: "Product not found"
-        });
-      }
-
-      // ------------------------------------------------------------
-      // ✅ 3️⃣ Send success response
-      // ------------------------------------------------------------
-      res.status(200).json({
-        success: true,                 // request successful
-        averageRating: product.averageRating, // avg star rating
-        numOfReviews: product.numOfReviews,   // total reviews count
-        reviews: product.reviews       // array of all reviews
-      });
-
-    } catch (error) {
-      // ------------------------------------------------------------
-      // ❌ 4️⃣ Handle invalid ObjectId or server error
-      // ------------------------------------------------------------
-      res.status(500).json({
+    // ------------------------------------------------------------
+    // ❌ 2️⃣ Handle product not found
+    // ------------------------------------------------------------
+    if (!product) {
+      return res.status(404).json({
         success: false,
-        message: error.message
+        message: "Product not found"
       });
     }
+
+    // ------------------------------------------------------------
+    // ✅ 3️⃣ Send success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,                 // request successful
+      averageRating: product.averageRating, // avg star rating
+      numOfReviews: product.numOfReviews,   // total reviews count
+      reviews: product.reviews       // array of all reviews
+    });
+
+  } catch (error) {
+    // ------------------------------------------------------------
+    // ❌ 4️⃣ Handle invalid ObjectId or server error
+    // ------------------------------------------------------------
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
+}
 );
 
 
 // ✅⭐ DELETE REVIEW (🔐 ADMIN ONLY)
-app.delete("/api/admin/products/:productId/reviews/:reviewId",isAuthenticatedUser,isAdmin, async (req, res) => {
+app.delete("/api/admin/products/:productId/reviews/:reviewId", isAuthenticatedUser, isAdmin, async (req, res) => {
 
-//     {🧠 What this API DOES (Command Points)
-// • Allows admin to delete a specific review
-// • Finds product using productId
-// • Finds review using reviewId
-// • Removes review from reviews array
-// • Recalculates average rating
-// • Updates total review count
-// • Saves updated product
+  //     {🧠 What this API DOES (Command Points)
+  // • Allows admin to delete a specific review
+  // • Finds product using productId
+  // • Finds review using reviewId
+  // • Removes review from reviews array
+  // • Recalculates average rating
+  // • Updates total review count
+  // • Saves updated product
 
-// 🎯 Why this API is USED
-// • Remove fake or abusive reviews
-// • Moderate user-generated content
-// • Maintain accurate product ratings
-// • Admin control over product reviews
-// • Real e-commerce moderation feature}
+  // 🎯 Why this API is USED
+  // • Remove fake or abusive reviews
+  // • Moderate user-generated content
+  // • Maintain accurate product ratings
+  // • Admin control over product reviews
+  // • Real e-commerce moderation feature}
 
-    try {
-      // ------------------------------------------------------------
-      // 📥 1️⃣ Extract productId and reviewId from URL params
-      // ------------------------------------------------------------
-      const { productId, reviewId } = req.params;
+  try {
+    // ------------------------------------------------------------
+    // 📥 1️⃣ Extract productId and reviewId from URL params
+    // ------------------------------------------------------------
+    const { productId, reviewId } = req.params;
 
-      // ------------------------------------------------------------
-      // 🔍 2️⃣ Find product by productId
-      // ------------------------------------------------------------
-      const product = await productModel.findById(productId);
+    // ------------------------------------------------------------
+    // 🔍 2️⃣ Find product by productId
+    // ------------------------------------------------------------
+    const product = await productModel.findById(productId);
 
-      // ❌ If product does not exist
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          message: "Product not found"
-        });
-      }
-
-      // ------------------------------------------------------------
-      // 🔎 3️⃣ Find index of the review inside product.reviews array
-      // ------------------------------------------------------------
-      // → Compare each review _id with reviewId from URL
-      const reviewIndex = product.reviews.findIndex(
-        (r) => r._id.toString() === reviewId
-      );
-
-      // ❌ If review not found
-      if (reviewIndex === -1) {
-        return res.status(404).json({
-          success: false,
-          message: "Review not found"
-        });
-      }
-
-      // ------------------------------------------------------------
-      // 🗑️ 4️⃣ Remove the review from reviews array
-      // ------------------------------------------------------------
-      // → splice removes exactly one review at the found index
-      product.reviews.splice(reviewIndex, 1);
-
-      // ------------------------------------------------------------
-      // 📊 5️⃣ Update review count and average rating
-      // ------------------------------------------------------------
-      // → Update total review count
-      product.numOfReviews = product.reviews.length;
-
-      // → Recalculate average rating
-      // → If no reviews left, set rating to 0
-      product.averageRating =
-        product.reviews.length === 0
-          ? 0
-          : product.reviews.reduce((acc, r) => acc + r.rating, 0) /
-            product.reviews.length;
-
-      // ------------------------------------------------------------
-      // 💾 6️⃣ Save updated product document
-      // ------------------------------------------------------------
-      await product.save();
-
-      // ------------------------------------------------------------
-      // ✅ 7️⃣ Send success response
-      // ------------------------------------------------------------
-      res.status(200).json({
-        success: true,
-        message: "Review deleted successfully"
-      });
-
-    } catch (error) {
-      // ------------------------------------------------------------
-      // ❌ 8️⃣ Handle server or unexpected errors
-      // ------------------------------------------------------------
-      res.status(500).json({
+    // ❌ If product does not exist
+    if (!product) {
+      return res.status(404).json({
         success: false,
-        message: error.message
+        message: "Product not found"
       });
     }
+
+    // ------------------------------------------------------------
+    // 🔎 3️⃣ Find index of the review inside product.reviews array
+    // ------------------------------------------------------------
+    // → Compare each review _id with reviewId from URL
+    const reviewIndex = product.reviews.findIndex(
+      (r) => r._id.toString() === reviewId
+    );
+
+    // ❌ If review not found
+    if (reviewIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Review not found"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 🗑️ 4️⃣ Remove the review from reviews array
+    // ------------------------------------------------------------
+    // → splice removes exactly one review at the found index
+    product.reviews.splice(reviewIndex, 1);
+
+    // ------------------------------------------------------------
+    // 📊 5️⃣ Update review count and average rating
+    // ------------------------------------------------------------
+    // → Update total review count
+    product.numOfReviews = product.reviews.length;
+
+    // → Recalculate average rating
+    // → If no reviews left, set rating to 0
+    product.averageRating =
+      product.reviews.length === 0
+        ? 0
+        : product.reviews.reduce((acc, r) => acc + r.rating, 0) /
+        product.reviews.length;
+
+    // ------------------------------------------------------------
+    // 💾 6️⃣ Save updated product document
+    // ------------------------------------------------------------
+    await product.save();
+
+    // ------------------------------------------------------------
+    // ✅ 7️⃣ Send success response
+    // ------------------------------------------------------------
+    res.status(200).json({
+      success: true,
+      message: "Review deleted successfully"
+    });
+
+  } catch (error) {
+    // ------------------------------------------------------------
+    // ❌ 8️⃣ Handle server or unexpected errors
+    // ------------------------------------------------------------
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
+}
 );
 
 

@@ -1,146 +1,219 @@
-import React, { useState, useEffect } from 'react'
-import "../assets/styles/product.css"
-import axiosInstance from "../axios_instance"
+// React hooks for state management and lifecycle
+import React, { useState, useEffect } from "react";
 
+// Product section styles
+import "../assets/styles/product.css";
+
+// Axios instance with base URL & interceptors
+import axiosInstance from "../axios_instance";
+
+// Fallback image when product image fails to load
 import placeholderImage from "../assets/img/tem.jfif";
 
+// Star rating component
+import RatingStars from "./RatingStars";
+
+// Skeleton loader component
+import ProductSkeleton from "../components/ProductSkeleton";
+
+// to display toast notifications
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+import { useNavigate } from "react-router-dom";
 
 const ProductSection = () => {
-  let [loading, setLoading] = useState(true);
+
+
+  const navigate = useNavigate();
+
+  // Loader state (true until API response)
+  const [loading, setLoading] = useState(true);
+
+  // Stores fetched product list
   const [products, setProducts] = useState([]);
+
+  // 🛒 Temporary cart handler (later connect Redux)
+  const handleAddToCart = (product) => {
+    console.log("Add to cart:", product.name);
+  };
+
+  // ⚡ Buy now handler
+  // const handleBuyNow = (product) => {
+  //   console.log("Buy now:", product.name);
+  // };
+
+  // Fetch products when component mounts
   useEffect(() => {
     async function fetchProducts() {
       try {
-        let res = await axiosInstance.get("/api/products");
-        console.log(res);
-        setProducts(res.data.products)
+        // API call to get all products
+        const res = await axiosInstance.get("/api/products");
 
+        // console.log(res); // Debugging API response
+
+        // Store products in state
+        setProducts(res.data.products);
       } catch (err) {
+        // Error handling
         console.error("Error fetching products:", err);
+        toast.error("Failed to load products 😢");
+
       } finally {
+        // Stop loader in both success & error cases
         setLoading(false);
       }
-
     }
-    fetchProducts()
-  }, [])
+
+    fetchProducts();
+  }, []);
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Product Section Wrapper */}
       <div
         className="container-fluid py-5"
         id="products"
         style={{ background: "radial-gradient(#8c52ff, #5ce1e6)" }}
       >
         <div className="holder">
+          {/* Section Heading */}
           <h2 className="text-center text-white fw-bold mb-4">
             Best Deals on Smartphones
           </h2>
 
+          <div className="container">
+            <div className="row justify-content-center g-3 g-md-4">
+              {/* 🔄 Skeleton loader while fetching */}
+              {loading
+                ? [...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="col-6 col-md-4 col-lg-3 col-xl-2"
+                  >
+                    <ProductSkeleton />
+                  </div>
+                ))
+                : products.map((product) => (
+                  <div
+                    key={product._id}
+                    className="col-6 col-md-4 col-lg-3 col-xl-2"
+                  >
+                    {/* Product Card */}
+                    <div className="card h-100 text-center shadow-sm border-0">
+                      {/* Image container */}
+                      <div className="overflow-hidden">
+                        <img
+                          src={product.images?.[0]}
+                          alt={product.name}
+                          className="card-img-top"
+                          onError={(e) =>
+                            (e.target.src = placeholderImage)
+                          }
+                          onMouseOver={(e) =>
+                            (e.currentTarget.style.transform = "scale(1.1)")
+                          }
+                          onMouseOut={(e) =>
+                            (e.currentTarget.style.transform = "scale(1)")
+                          }
+                        />
+                      </div>
 
-          {/* Loader animation */}
-          {loading ?
-            (
-              <div className="text-center py-5">
-                <div
-                  className="spinner-border text-light"
-                  style={{ width: "4rem", height: "4rem" }}
-                  role="status"
-                >
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-                <p className="mt-3 text-white">Loading best deals...</p>
-              </div>
-            )
-            :
-            (
-              <div className="container">
-                <div className="row justify-content-center g-3 g-md-4">
-                  {products.map((product) => (
-                    <div key={product._id} className="col-6 col-md-4 col-lg-3 col-xl-2">
-                      <div className="card h-100 text-center shadow-sm border-0">
-                        <div className="card-img-containe overflow-hidden">
-                          <img
-                            src={product.image}
-                            // this image only shown when url is wrong
-                            onError={(e) => (e.target.src = placeholderImage)}
-                            alt={product.name}
-                            className="card-img-top"
-                          
-                            onMouseOver={(e) =>
-                              (e.currentTarget.style.transform = "scale(1.1)")
-                            }
-                            onMouseOut={(e) =>
-                              (e.currentTarget.style.transform = "scale(1)")
-                            }
+                      {/* Card Body */}
+                      <div className="card-body text-start">
+                        {/* Product Name */}
+                           
+                        <h6 className="fw-bold text-dark"  onClick={() => navigate(`/product/${product._id}`)} style={{ cursor: "pointer" }}>
+                          {product.name}
+                        </h6>
+
+                        {/* ⭐ Rating OR 🚫 Out of stock (never both) */}
+                        {product.quantity === 0 ? (
+                          <span className="badge bg-danger mb-2">
+                            Out of stock
+                          </span>
+                        ) : (
+                          <div className="d-flex align-items-center gap-1 mb-1">
+                            <RatingStars rating={product.averageRating || 0} />
+                            <span
+                              className="text-muted"
+                              style={{ fontSize: "0.8em" }}
+                            >
+                              ({product.numOfReviews})
+                            </span>
+                          </div>
+                        )}
 
 
-                          />
+                        {/* 💰 Pricing */}
+                        <div className="d-flex align-items-center gap-2">
+                          <p
+                            className="text-muted text-decoration-line-through mb-1"
+                            style={{ fontSize: "0.9em" }}
+                          >
+                            ₹{product.originalPrice}
+                          </p>
+                          <p
+                            className="text-success fw-bold mb-1"
+                            style={{ fontSize: "1.1em" }}
+                          >
+                            ₹{product.offerPrice}
+                          </p>
                         </div>
 
-                        <div className="card-body text-start">
-                          <h6 className="fw-bold text-dark">{product.name}</h6>
-                          <div className="d-flex align-items-center gap-2">
-                            <p
-                              className="text-muted text-decoration-line-through mb-1"
-                              style={{ fontSize: "0.9em" }}
-                            >
-                              ₹{product.originalPrice}
-                            </p>
-                            <p
-                              className="text-success fw-bold mb-1"
-                              style={{ fontSize: "1.1em" }}
-                            >
-                              ₹{product.offerPrice}
-                            </p>
-                          </div>
+                        {/* 🛒 Action Buttons */}
+                        <div className="d-flex gap-2 mt-2">
+                          <button
+                            className="btn btn-sm w-50 text-white"
+                            style={{ backgroundColor: "var(--voilet)" }}
+                            disabled={product.quantity === 0}
+                            title={product.quantity === 0 ? "Out of stock" : "Add to cart"}
+                            onClick={() =>
+                              product.quantity > 0 && handleAddToCart(product)
+                            }
+                          >
+                            <i className="bi bi-cart"></i> Add
+                          </button>
 
-                          <div className="d-flex gap-2 mt-2">
+                          <button
+                            className="btn btn-sm w-50 text-white"
+                            style={{ backgroundColor: "var(--green)" }}
+                            title="View product"
+                            onClick={() => navigate(`/product/${product._id}`)}
+                          >
+                            <i className="bi bi-eye"></i> View
+                          </button>
 
-                            <button
-                              className="btn btn-sm w-50 text-white"
-                              style={{ backgroundColor: "var(--voilet)" }}
-                            >
-                              <i className="bi bi-cart add-to-cart-btn"> Add to Cart</i> 
-                            </button>
-
-                            <button
-                              className="btn btn-sm w-50 text-white"
-                              style={{ backgroundColor: "var(--green)" }}
-                            >
-                              <i className="bi bi-bag buy-btn"> Buy Now</i>
-                            </button>
-
-                          </div>
                         </div>
+
                       </div>
                     </div>
-                  ))}
-                </div>
-                {/* View All Button */}
-                <div className="text-center mt-4">
-                  <a
-                    href="/products"
-                    className="btn text-white fw-semibold px-4 py-2"
-                    style={{
-                      backgroundColor: "var(--green)",
-                      borderRadius: "10px",
-                    }}
-                  >
-                    View All
-                  </a>
-                </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* View All Products Button */}
+            {!loading && (
+              <div className="text-center mt-4">
+                <a
+                  href="/products"
+                  className="btn text-white fw-semibold px-4 py-2"
+                  style={{
+                    backgroundColor: "var(--green)",
+                    borderRadius: "10px",
+                  }}
+                >
+                  View All
+                </a>
               </div>
-            )
-          }
-
+            )}
+          </div>
         </div>
-
       </div>
-
-
     </>
-  )
-}
+  );
+};
 
-export default ProductSection
+export default ProductSection;

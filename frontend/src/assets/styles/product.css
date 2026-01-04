@@ -38,3 +38,7 @@
   opacity: 0.9;
   transform: scale(1.03);
 }
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

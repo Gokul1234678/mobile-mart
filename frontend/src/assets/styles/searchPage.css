@@ -1,0 +1,298 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.filters {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.filters h5 {
+    text-decoration: underline;
+}
+
+.product-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: scale(1.02);
+}
+
+.product-image {
+    width: 150px;
+    height: auto;
+    max-height: 150px;
+    object-fit: cover;
+    margin-right: 15px;
+    border-radius: 8px;
+}
+
+.btn-buy {
+    background-color: green;
+    color: #fff;
+}
+
+.btn-cart {
+    background-color: purple;
+    color: #fff;
+}
+
+.filter-button {
+    display: none;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    .filters {
+        display: none;
+    }
+
+    .filter-button {
+        display: block;
+    }
+}
+
+
+/* =========================
+   SEARCH BAR STYLES
+========================= */
+
+.search-bar-wrapper {
+    max-width: 600px;
+  }
+  
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--darkwhite);
+    border: 2px solid #b1afaf;
+    border-radius: 12px;
+    padding: 10px 14px;
+  }
+  
+  .search-icon {
+    font-size: 20px;
+    color: #444;
+  }
+  
+  .search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 1.2rem;
+    padding: 6px;
+  }
+  
+  .search-input::placeholder {
+    color: #777;
+  }
+  
+  .clear-btn {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    cursor: pointer;
+    color: #666;
+  }
+  
+  .clear-btn:hover {
+    color: red;
+  }
+  
+  /* Mobile optimization */
+  @media (max-width: 576px) {
+    .search-input {
+      font-size: 1.1rem;
+    }
+  }
+
+  
+
+
+/* ===============================
+   SEARCH PRODUCT CARD
+   =============================== */
+
+   .search-product-card {
+    cursor: pointer;
+    display: flex;
+    gap: 16px;
+    padding: 14px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    align-items: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .search-product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* ===============================
+     IMAGE SECTION
+     =============================== */
+  
+  .search-product-image {
+    flex-shrink: 0;
+  }
+  
+  .search-product-image img {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    border-radius: 10px;
+    cursor: pointer;
+    background-color: #f9fafb;
+    padding: 6px;
+  }
+  
+  /* ===============================
+     DETAILS SECTION
+     =============================== */
+  
+  .search-product-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+ 
+  }
+  
+  /* Product title */
+  .product-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  
+  .product-title:hover {
+    color: #4f46e5;
+  }
+  
+  /* ===============================
+     RATING
+     =============================== */
+  
+  .rating-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  
+  .review-count {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+  
+  /* ===============================
+     AVAILABILITY
+     =============================== */
+  
+  .availability {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .in-stock {
+    color: #16a34a;
+  }
+  
+  .out-stock {
+    color: #dc2626;
+  }
+  
+  /* ===============================
+     PRICE
+     =============================== */
+  
+  .price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #16a34a;
+    margin: 6px 0;
+  }
+  
+  /* ===============================
+     ADD TO CART BUTTON
+     =============================== */
+  
+  .btn-cart {
+    background-color: var(--voilet);
+  
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    width: fit-content;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+  
+  .btn-cart:hover {
+    background-color: #4b1fb8;
+    transform: scale(1.03);
+  }
+  
+  .btn-cart:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* ===============================
+     BADGE
+     =============================== */
+  
+  .badge {
+    width: fit-content;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+  
+  /* ===============================
+     MOBILE RESPONSIVE
+     =============================== */
+  
+  @media (max-width: 576px) {
+    .search-product-card {
+      padding: 10px;
+      gap: 12px;
+    }
+  
+    .search-product-image img {
+      width: 100px;
+      height: 100px;
+    }
+  
+    .product-title {
+      font-size: 1rem;
+    }
+  
+    .price {
+      font-size: 1.05rem;
+    }
+  
+    .btn-cart {
+      padding: 5px 12px;
+      font-size: 0.85rem;
+    }
+  }
+  

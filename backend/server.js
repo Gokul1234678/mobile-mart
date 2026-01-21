@@ -1372,7 +1372,7 @@ app.get("/api/products/advanced-search", async (req, res) => {
   // 5️⃣ Filter by battery
   // (5000mAh, 4500mAh…)
 
-  // 6️⃣ Filter by network
+  // 6️⃣ Filter by network (Not Now)
   // (5G, 4G…)
 
   // 7️⃣ Filter by price range
@@ -1428,30 +1428,98 @@ app.get("/api/products/advanced-search", async (req, res) => {
     // ------------------------
     // 🏷️ 2. Brand filter
     // ------------------------
+    /*
+      👉 This filter handles BRAND selection from frontend
+      👉 Supports SINGLE brand and MULTIPLE brands
+      👉 Example frontend query:
+         ?brand=Apple,Samsung
+    
+      Step-by-step:
+      1️⃣ Check if brand filter exists in request
+      2️⃣ Convert comma-separated string into array
+      3️⃣ Use MongoDB $in operator to match ANY selected brand
+      4️⃣ Use RegExp with "i" flag for case-insensitive matching
+    */
     if (brand) {
-      filter.brand = { $regex: brand, $options: "i" };
+
+      // Convert "Apple,Samsung" → ["Apple", "Samsung"]
+      const brandArray = brand.split(",");
+
+      // MongoDB query:
+      // brand should match ANY value from brandArray
+      filter.brand = {
+        $in: brandArray.map(b => new RegExp(b, "i"))
+        // "i" → case-insensitive
+        // RegExp allows partial & flexible matching
+      };
     }
 
     // ------------------------
-    // ⚙ 3. RAM filter
+    // ⚙️ 3. RAM filter
     // ------------------------
+    /*
+      👉 Handles RAM filter (example: 6GB, 8GB)
+      👉 Frontend sends:
+         ?ram=6GB,8GB
+    
+      Why $in?
+      ❌ regex alone fails when multiple values are selected
+      ✅ $in allows matching ANY selected RAM value
+    */
     if (ram) {
-      filter["specifications.RAM"] = { $regex: ram, $options: "i" }
+
+      // Convert "6GB,8GB" → ["6GB", "8GB"]
+      const ramArray = ram.split(",");
+
+      // MongoDB nested field query
+      filter["specifications.RAM"] = {
+        $in: ramArray.map(r => new RegExp(r, "i"))
+      };
     }
 
     // ------------------------
     // 💾 4. Storage filter
     // ------------------------
+    /*
+      👉 Filters products by internal storage
+      👉 Example frontend query:
+         ?storage=128GB,256GB
+    
+      Stored in MongoDB as:
+      specifications.Storage
+    */
     if (storage) {
-      filter["specifications.Storage"] = { $regex: storage, $options: "i" };
+
+      filter["specifications.Storage"] = {
+        $in: storage
+          .split(",")                 // "128GB,256GB" → ["128GB", "256GB"]
+          .map(s => new RegExp(s, "i"))
+      };
     }
+
 
     // ------------------------
     // 🔋 5. Battery filter
     // ------------------------
+    /*
+      👉 Filters products by battery capacity
+      👉 Example frontend query:
+         ?battery=5000mAh,4500mAh
+    
+      Why RegExp?
+      ✔ Handles text-based values
+      ✔ Case-insensitive matching
+    */
     if (battery) {
-      filter["specifications.Battery"] = { $regex: battery, $options: "i" };
+
+      // Convert "5000mAh,4500mAh" → ["5000mAh", "4500mAh"]
+      const batteryArray = battery.split(",");
+
+      filter["specifications.Battery"] = {
+        $in: batteryArray.map(b => new RegExp(b, "i"))
+      };
     }
+
 
     // ------------------------
     // 🌐 6. Network filter (5G, 4G)

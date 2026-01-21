@@ -18,6 +18,8 @@ import Pagination from "react-js-pagination";
 // Styles
 import "../assets/styles/searchPage.css";
 
+import { Helmet } from "react-helmet-async";
+
 const SearchProducts = () => {
   const navigate = useNavigate();
 
@@ -75,7 +77,7 @@ const SearchProducts = () => {
       };
 
 
-      console.log("Fetching with params:", params)
+      // console.log("Fetching with params:", params)
 
       const res = await axiosInstance.get(
         "/api/products/advanced-search",
@@ -104,7 +106,7 @@ const SearchProducts = () => {
         ? prev[type].filter((v) => v !== value)
         : [...prev[type], value]
     }));
-    console.log(filters);
+    // console.log(filters);
   };
 
   const handlePageChange = (pageNumber) => {
@@ -116,6 +118,20 @@ const SearchProducts = () => {
   // --------------------
   return (
     <>
+
+      <Helmet>
+      {/* Dynamic title ---> the title to change when searching */}
+        <title>
+          {keyword
+            ? `Search "${keyword}" | Mobile Mart`
+            : "Search Products | Mobile Mart"}
+        </title>
+        <meta
+          name="description"
+          content="Search smartphones by brand, RAM, storage, battery and price. Find the best mobile deals on Mobile Mart."
+        />
+      </Helmet>
+
       <Navbar />
 
       {/* 🔍 SEARCH BAR (mobile-friendly UI) */}
@@ -346,44 +362,70 @@ const SearchProducts = () => {
 
               {/* ✅ Products */}
               {!loading &&
-                products.length > 0 && products.map((product) => (
-                  <div
-                    key={product._id}
-                    className="col-6 col-md-4 col-lg-3"
-                  >
-                    <div className="card h-100">
-                      <img
-                        src={product.images?.[0]}
-                        className="card-img-top"
-                        alt={product.name}
-                      />
-                      <div className="card-body">
-                        <h6
-                          style={{ cursor: "pointer" }}
-                          onClick={() =>
-                            navigate(`/product/${product._id}`)
-                          }
+                products.length > 0 &&
+                products.map((product) => (
+                  <div key={product._id} className="col-12" >
+
+                    <div className="search-product-card"
+                      onClick={() => navigate(`/product/${product._id}`)}
+                    >
+
+                      {/* LEFT: IMAGE */}
+                      <div className="search-product-image">
+                        <img
+                          src={product.images?.[0]}
+                          alt={product.name}
+                          onClick={() => navigate(`/product/${product._id}`)}
+                        />
+                      </div>
+
+                      {/* RIGHT: DETAILS */}
+                      <div className="search-product-details">
+
+                        <h5
+                          className="product-title"
+                          onClick={() => navigate(`/product/${product._id}`)}
                         >
                           {product.name}
-                        </h6>
+                        </h5>
 
+                        {/* ⭐ Rating */}
                         {product.quantity === 0 ? (
-                          <span className="badge bg-danger">
-                            Out of stock
-                          </span>
+                          <span className="badge bg-danger">Out of stock</span>
                         ) : (
-                          <RatingStars
-                            rating={product.averageRating}
-                          />
+                          <div className="rating-row">
+                            <RatingStars rating={product.averageRating} />
+                            <span className="review-count">
+                              ({product.numOfReviews})
+                            </span>
+                          </div>
                         )}
 
-                        <p className="fw-bold text-success">
-                          ₹{product.offerPrice}
+                        {/* Availability */}
+                        <p
+                          className={`availability ${product.quantity > 0 ? "in-stock" : "out-stock"
+                            }`}
+                        >
+                          {product.quantity > 0 ? "In stock" : "Out of stock"}
                         </p>
+
+                        {/* Price */}
+                        <h4 className="price">₹ {product.offerPrice}</h4>
+
+                        {/* Add Cart */}
+                        <button
+                          className=" btn-cart "
+                          disabled={product.quantity === 0}
+                          onClick={() => console.log("Add to cart", product._id)}
+                        >
+                          <i className="bi bi-cart me-1 "></i> Add Cart
+                        </button>
+
                       </div>
                     </div>
                   </div>
                 ))}
+
             </div>
 
             {/* PAGINATION */}

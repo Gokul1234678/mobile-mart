@@ -127,7 +127,7 @@ const ProductView = () => {
 
           {/* PRODUCT DETAILS */}
           <div className="col-lg-6">
-            <div className="product-card">
+            <div className="product-view-card">
               <h2>{product.name}</h2>
 
               {/* Product ID */}

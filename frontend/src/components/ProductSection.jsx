@@ -20,16 +20,28 @@ import ProductSkeleton from "../components/ProductSkeleton";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// Navigation hook from react-router-dom
 import { useNavigate } from "react-router-dom";
+
+// Pagination component used for product listing pages
+import Pagination from "react-js-pagination";
 
 const ProductSection = () => {
 
 
+  // Navigation hook used to navigate to product details page
   const navigate = useNavigate();
 
+  // Pagination state
+  const [activePage, setActivePage] = useState(1);
+  const itemsPerPage = 6;
+
+  const handlePageChange = (pageNumber) => {
+    setActivePage(pageNumber);
+  };
+ 
   // Loader state (true until API response)
   const [loading, setLoading] = useState(true);
-
   // Stores fetched product list
   const [products, setProducts] = useState([]);
 
@@ -38,10 +50,6 @@ const ProductSection = () => {
     console.log("Add to cart:", product.name);
   };
 
-  // ⚡ Buy now handler
-  // const handleBuyNow = (product) => {
-  //   console.log("Buy now:", product.name);
-  // };
 
   // Fetch products when component mounts
   useEffect(() => {
@@ -68,8 +76,18 @@ const ProductSection = () => {
     fetchProducts();
   }, []);
 
+ // Calculate products for current page
+  const indexOfLastProduct = activePage * itemsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+  const currentProducts = products.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
+
+
   return (
     <>
+    {/* ToastContainer is for displaying notifications */}
       <ToastContainer position="top-right" autoClose={3000} />
 
       {/* Product Section Wrapper */}
@@ -96,7 +114,7 @@ const ProductSection = () => {
                     <ProductSkeleton />
                   </div>
                 ))
-                : products.map((product) => (
+                : currentProducts.map((product) => (
                   <div
                     key={product._id}
                     className="col-6 col-md-4 col-lg-3 col-xl-2"
@@ -124,8 +142,8 @@ const ProductSection = () => {
                       {/* Card Body */}
                       <div className="card-body text-start">
                         {/* Product Name */}
-                           
-                        <h6 className="fw-bold text-dark"  onClick={() => navigate(`/product/${product._id}`)} style={{ cursor: "pointer" }}>
+
+                        <h6 className="fw-bold text-dark" onClick={() => navigate(`/product/${product._id}`)} style={{ cursor: "pointer" }}>
                           {product.name}
                         </h6>
 
@@ -194,21 +212,99 @@ const ProductSection = () => {
                 ))}
             </div>
 
-            {/* View All Products Button */}
-            {!loading && (
-              <div className="text-center mt-4">
-                <a
-                  href="/products"
-                  className="btn text-white fw-semibold px-4 py-2"
-                  style={{
-                    backgroundColor: "var(--green)",
-                    borderRadius: "10px",
-                  }}
-                >
-                  View All
-                </a>
-              </div>
-            )}
+{/* ===================== Pagination ===================== */}
+{/* 
+  This condition ensures:
+  1️⃣ Pagination is shown ONLY after loading is finished
+  2️⃣ Pagination is shown ONLY if total products are more than one page
+    && This is short-circuit rendering
+    It means:“Render the component only if the condition is true”
+*/}
+{!loading && products.length > itemsPerPage && (
+  <div className="d-flex justify-content-center mt-4">
+    {/* Pagination component from react-js-pagination */}
+    <Pagination
+      /* 
+        activePage:
+        - Current page number selected
+        - Example: 1, 2, 3...
+        - This comes from React state (useState)
+      */
+      activePage={activePage}
+
+      /*
+        itemsCountPerPage:
+        - How many products should appear per page
+        - Example: 6 products per page
+      */
+      itemsCountPerPage={itemsPerPage}
+
+      /*
+        totalItemsCount:
+        - Total number of products available
+        - Used to calculate how many pages are needed
+        - Example: 30 products / 6 per page = 5 pages
+      */
+      totalItemsCount={products.length}
+
+      /*
+        pageRangeDisplayed:
+        - How many page numbers to show in pagination UI
+        - Example: 5 → shows: 1 2 3 4 5
+      */
+      pageRangeDisplayed={5}
+
+      /*
+        onChange:
+        - This function runs when user clicks a page number
+        - The clicked page number is automatically passed as argument
+        - Example: handlePageChange(2)
+      */
+      onChange={handlePageChange}
+
+
+
+      /* ================= Buttons ================= */
+
+      /* 🔹 Show First button */
+      firstPageText="First"
+
+      /* 🔹 Show Last button */
+      lastPageText="Last"
+
+      /* 🔹 Show Previous button */
+      prevPageText="Prev"
+
+      /* 🔹 Show Next button */
+      nextPageText="Next"
+
+
+
+      /*
+        itemClass:
+        - Class applied to each <li> element
+        - Works well with Bootstrap pagination styles
+      */
+      itemClass="page-item"
+
+      /*
+        linkClass:
+        - Class applied to each page <a> link
+      */
+      linkClass="page-link"
+
+      /*
+        innerClass:
+        - Class applied to the main <ul> wrapper
+      */
+      innerClass="pagination"
+    />
+  </div>
+)}
+
+{/* ===================== End Pagination ===================== */}
+
+
           </div>
         </div>
       </div>

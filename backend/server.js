@@ -17,7 +17,15 @@ const nodemailer = require("nodemailer");
 dotenv.config({ path: "./config/config.env" })
 
 app.use(express.json())// to parse JSON body
-app.use(cors());
+
+// CORS configuration
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend URL
+    credentials: true,
+  })
+);
+
 app.use(cookieParser());//This allows you to access cookies using req.cookies.
 
 // 🛑 Handle uncaught exceptions (coding errors)
@@ -475,7 +483,8 @@ app.post("/api/register", async (req, res) => {
 
   try {
     let {
-      name, email, password, phone, gender, role,
+      name, email, password, phone, gender,
+      role,
       street, city, state, pincode } = req.body;
 
     // Check if user already exists
@@ -579,18 +588,19 @@ app.post("/api/login", async (req, res) => {
 
 
 // ✅ Logout API
-app.get("/api/logout", isAuthenticatedUser, (req, res) => {
-  // Remove token from cookies by setting it to null & expiring immediately
-  res.cookie("token", null, {
-    httpOnly: true,
-    expires: new Date(0) // Cookie expires immediately
-  });
+app.get("/api/logout", isAuthenticatedUser,async function (req, res) {
+    
+    // Remove token from cookies by setting it to null & expiring immediately
+    res.cookie("token", null, {
+      httpOnly: true,
+      expires: new Date(0) // Cookie expires immediately
+    });
 
-  return res.status(200).json({
-    success: true,
-    message: "Logout successful! Token removed."
+    return res.status(200).json({
+      success: true,
+      message: "Logout successful! Token removed."
+    });
   });
-});
 
 
 // ✅ Get Logged-in User Details

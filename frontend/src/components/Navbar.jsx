@@ -1,5 +1,9 @@
 import React from 'react'
-
+import { useState } from 'react';
+import { useDispatch } from "react-redux";
+import { logoutUser } from "../redux/userSlice";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 // ✅ import your image assets (place them in src/assets/img)
 import logo from "../assets/img/icons/logo.png";
@@ -18,10 +22,37 @@ import "../assets/styles/navbar.css"
 
 const Navbar = () => {
 
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  // 🔥 LOGOUT LOADING STATE
+  const [logoutLoading, setLogoutLoading] = useState(false);
+
+  const {user, isAuthenticated} = useSelector((state) => state.user);
+
+console.log(isAuthenticated);
+
+
+  const logoutHandler = async () => {
+    setLogoutLoading(true);
+
+    try {
+      await dispatch(logoutUser()).unwrap();
+      toast.success("Logged out successfully");
+    } catch (err) {
+      // Backend failed, but frontend logout still happens
+      console.warn("Logout API failed:", err);
+      toast.warning("Logged out locally");
+    } finally {
+      setLogoutLoading(false);
+      navigate("/login");
+    }
+  };
+
 
   return (
     <>
+     
+
       <nav className="navbar navbar-expand-lg" style={{ "backgroundColor": "var(--voilet)" }}>
         <div className="container-fluid ms-lg-2 me-lg-2">
           {/* Brand Logo */}
@@ -111,8 +142,8 @@ const Navbar = () => {
               </li>
 
               <li className="nav-item text-center d-lg-none border-bottom responsive-border py-2">
-                <button className="nav-link fw-bold bg-white rounded-3 border-0 w-100" style={{ color: "red" }}>
-                  <img src={logout3} alt="logout" /> Log out
+                <button onClick={logoutHandler} disabled={logoutLoading} className="nav-link fw-bold bg-white rounded-3 border-0 w-100" style={{ color: "red" }}>
+                  <img src={logout3} alt="logout" /> {logoutLoading ? "Logging out..." : "Log out"}
                 </button>
               </li>
 
@@ -126,7 +157,8 @@ const Navbar = () => {
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  Gokul Selvan
+                  {user?.name || "User"}
+
                 </a>
 
                 <ul className="dropdown-menu">
@@ -159,8 +191,8 @@ const Navbar = () => {
 
                   <li className="d-flex align-items-center justify-content-between ps-2">
                     <img src={logout3} alt="Logout" />
-                    <button className="dropdown-item text-danger border-0 bg-transparent">
-                      Log Out
+                    <button onClick={logoutHandler} disabled={logoutLoading} className="dropdown-item text-danger border-0 bg-transparent">
+                      {logoutLoading ? "Logging out..." : "Log out"}
                     </button>
                   </li>
                 </ul>
@@ -172,8 +204,9 @@ const Navbar = () => {
                 </Link>
               </li>
 
+              {/* logout btn */}
               <li className="nav-item ms-2 d-none d-lg-flex">
-                <button className="nav-link d-flex align-items-center border-0 bg-transparent">
+                <button onClick={logoutHandler} disabled={logoutLoading} className="nav-link d-flex align-items-center border-0 bg-transparent">
                   <img src={logoutIcon} alt="Logout" style={{ width: "2.6rem" }} />
                 </button>
               </li>

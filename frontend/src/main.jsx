@@ -12,10 +12,19 @@ import "./assets/styles/global.css";
 // This component helps us set page title and meta description dynamically
 import { HelmetProvider } from 'react-helmet-async';
 
+// Redux
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <HelmetProvider>
-      <App />
-    </HelmetProvider>
+    {/* Redux Store Provider */}
+    <Provider store={store}>
+      {/* SEO Provider */}
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
+
+    </Provider>
   </StrictMode>,
 )

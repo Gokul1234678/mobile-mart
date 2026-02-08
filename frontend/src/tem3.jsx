@@ -1,5 +1,5 @@
 // React
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 // Router
 import { useNavigate } from "react-router-dom";
@@ -7,403 +7,234 @@ import { useNavigate } from "react-router-dom";
 // API
 import axiosInstance from "../axios_instance";
 
-// Components
-import Navbar from "../components/Navbar";
-import RatingStars from "../components/RatingStars";
-import ProductSkeleton from "../components/ProductSkeleton";
+// SEO
+import { Helmet } from "react-helmet-async";
 
-// Pagination
-import Pagination from "react-js-pagination";
+// Toast
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Styles
-import "../assets/styles/searchPage.css";
+import "../assets/styles/register.css";
 
-const SearchProducts = () => {
+const Register = () => {
   const navigate = useNavigate();
 
-  // --------------------
-  // STATES
-  // --------------------
-  const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState([]);
+  // -----------------------------
+  // STATE
+  // -----------------------------
+  const [loading, setLoading] = useState(false);
 
-  const [keyword, setKeyword] = useState("");
-
-  // Toggle filter visibility (for mobile)
-  const [showFilters, setShowFilters] = useState(false);
-
-  // Toggle Filters (React way)
-  const toggleFilters = () => {
-    setShowFilters((prev) => !prev);
-  };
-
-
-  const [filters, setFilters] = useState({
-    brand: [],
-    ram: [],
-    storage: [],
-    battery: [],
-    minPrice: "",
-    maxPrice: ""
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
+    gender: "",
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
   });
 
-  const [activePage, setActivePage] = useState(1);
-  const [itemsPerPage] = useState(6);
-  const [totalProducts, setTotalProducts] = useState(0);
+  // -----------------------------
+  // HANDLE CHANGE
+  // -----------------------------
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  // --------------------
-  // FETCH PRODUCTS
-  // --------------------
-  useEffect(() => {
-    fetchProducts();
-  }, [keyword, filters, activePage]);
+  // -----------------------------
+  // SUBMIT
+  // -----------------------------
+  const submitHandler = async (e) => {
+    e.preventDefault();
 
-  const fetchProducts = async () => {
+    // 🔴 Validation
+    // if (!formData.name!formData.email!formData.password) {
+    //   toast.error("Name, Email and Password are required");
+    //   return;
+    // }
+
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const params = {
-        q: keyword,
-        page: activePage,
-        limit: itemsPerPage,
-        brand: filters.brand.join(","),      // Apple,Samsung
-        ram: filters.ram.join(","),          // 6GB,8GB
-        storage: filters.storage.join(","),  // 128GB,256GB
-        battery: filters.battery.join(","),  // 5000mAh
-        minPrice: filters.minPrice,
-        maxPrice: filters.maxPrice
-      };
+      const res = await axiosInstance.post("/api/register", {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        gender: formData.gender,
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+      });
 
+      toast.success(res.data.message || "Account created successfully");
 
-      console.log("Fetching with params:", params)
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
 
-      const res = await axiosInstance.get(
-        "/api/products/advanced-search",
-        { params }
-      );
-
-      // console.log("Search results:", res.data);
-
-      setProducts(res.data.products);
-      setTotalProducts(res.data.totalProductsFound);
     } catch (err) {
-      console.error("Search failed", err);
+      toast.error(
+        err.response?.data?.message || "Registration failed"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // --------------------
-  // FILTER HANDLERS
-  // --------------------
-  const toggleFilter = (type, value) => {
-    setActivePage(1); // reset pagination(🔑 IMPORTANT: go back to page 1)
-    setFilters((prev) => ({
-      ...prev,
-      [type]: prev[type].includes(value)
-        ? prev[type].filter((v) => v !== value)
-        : [...prev[type], value]
-    }));
-    console.log(filters);
-  };
-
-  const handlePageChange = (pageNumber) => {
-    setActivePage(pageNumber);
-  };
-
-  // --------------------
-  // RENDER
-  // --------------------
   return (
     <>
-      <Navbar />
+      {/* ================= SEO ================= */}
+      <Helmet>
+        <title>Register | Mobile Mart</title>
+        <meta
+          name="description"
+          content="Create a new account on Mobile Mart"
+        />
+      </Helmet>
 
-      {/* 🔍 SEARCH BAR (mobile-friendly UI) */}
-      <div className="container my-3">
-        <div className="search-bar-wrapper mx-auto">
-          <div className="search-bar">
-            <i className="bi bi-search search-icon"></i>
+      <ToastContainer position="top-right" autoClose={3000} />
 
+      {/* ================= REGISTER UI ================= */}
+      <div className="container register-page">
+        <div className="register-card text-center">
+
+          {/* LOGO */}
+          <div className="cus-logo d-flex justify-content-start mb-3">
+            <img src="/logo.png" alt="Mobile Mart" />
+          </div>
+
+          {/* HEADING */}
+          <h2 className="fw-bold">Create Account</h2>
+          <p className="text-muted mb-4">
+            Find the Perfect Fit for Your Pocket
+          </p>
+
+          {/* FORM */}
+          <form onSubmit={submitHandler}>
+
+            {/* NAME */}
             <input
               type="text"
-              className="search-input"
-              placeholder="Search for smartphones, brands, features..."
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-                setActivePage(1); // reset pagination
-              }}
+              className="form-control mb-3"
+              placeholder="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
             />
 
-            {keyword && (
-              <button
-                className="clear-btn"
-                onClick={() => {
-                  setKeyword("");
-                  setActivePage(1);
-                }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+            {/* EMAIL */}
+            <input
+              type="email"
+              className="form-control mb-3"
+              placeholder="Email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+            />
 
+            {/* PASSWORD */}
+            <input
+              type="password"
+              className="form-control mb-3"
+              placeholder="Password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+            />
+            {/* CONFIRM PASSWORD */}
+            <input
+              type="password"
+              className="form-control mb-4"
+              placeholder="Confirm Password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+            />
 
-      {/* 🔘 Filter button (only visible on mobile) */}
-      <button
-        className="btn btn-primary mb-3 d-lg-none ms-4 mt-2"
-        onClick={toggleFilters}
-      >
-        <i className="bi bi-funnel me-1"></i>
-        {showFilters ? "Hide Filters" : "Show Filters"}
-      </button>
+            {/* ADDRESS LABEL */}
+            <label className="form-label fw-bold my-3 text-start w-100">
+              Add Address Details:
+            </label>
 
+            {/* STREET */}
+            <textarea
+              className="form-control mb-3"
+              rows="2"
+              placeholder="Enter Street Address"
+              name="street"
+              value={formData.street}
+              onChange={handleChange}
+            />
 
-
-      {/* MAIN LAYOUT */}
-      <div className="container my-4">
-        <div className="row">
-          {/* FILTERS */}
-          <div
-            className={`col-lg-3 col-md-4 filters ${showFilters ? "d-block" : "d-none d-lg-block"
-              }`}
-          >
-
-            <h5>Filters</h5>
-
-            <div className="accordion" id="filtersAccordion">
-
-              {/* 💰 PRICE */}
-              <div className="accordion-item">
-                <h6 className="accordion-header">
-                  <button
-                    className="accordion-button collapsed"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#priceCollapse"
-                  >
-                    Price
-                  </button>
-                </h6>
-                <div id="priceCollapse" className="accordion-collapse collapse">
-                  <div className="accordion-body">
-                    <input
-                      type="number"
-                      className="form-control mb-2"
-                      placeholder="Min price"
-                      onChange={(e) =>
-                        setFilters({ ...filters, minPrice: e.target.value })
-                      }
-                    />
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="Max price"
-                      onChange={(e) =>
-                        setFilters({ ...filters, maxPrice: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 🏷️ BRAND */}
-              <div className="accordion-item">
-                <h6 className="accordion-header">
-                  <button
-                    className="accordion-button collapsed"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#brandCollapse"
-                  >
-                    Brand
-                  </button>
-                </h6>
-                <div id="brandCollapse" className="accordion-collapse collapse">
-                  <div className="accordion-body">
-                    {["Apple", "Samsung", "Redmi", "Vivo", "Poco", "OnePlus"].map((b) => (
-                      <div key={b}>
-                        <input
-                          type="checkbox"
-                          checked={filters.brand.includes(b)}
-                          onChange={() => toggleFilter("brand", b)}
-                        />{" "}
-                        {b}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* ⚙️ RAM */}
-              <div className="accordion-item">
-                <h6 className="accordion-header">
-                  <button
-                    className="accordion-button collapsed"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#ramCollapse"
-                  >
-                    RAM
-                  </button>
-                </h6>
-                <div id="ramCollapse" className="accordion-collapse collapse">
-                  <div className="accordion-body">
-                    {["4GB", "6GB", "8GB", "12GB"].map((r) => (
-                      <div key={r}>
-                        <input
-                          type="checkbox"
-                          checked={filters.ram.includes(r)}
-                          onChange={() => toggleFilter("ram", r)}
-                        />{" "}
-                        {r}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* 💾 STORAGE */}
-              <div className="accordion-item">
-                <h6 className="accordion-header">
-                  <button
-                    className="accordion-button collapsed"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#storageCollapse"
-                  >
-                    Storage
-                  </button>
-                </h6>
-                <div id="storageCollapse" className="accordion-collapse collapse">
-                  <div className="accordion-body">
-                    {["64GB", "128GB", "256GB", "512GB"].map((s) => (
-                      <div key={s}>
-                        <input
-                          type="checkbox"
-                          checked={filters.storage.includes(s)}
-                          onChange={() => toggleFilter("storage", s)}
-                        />{" "}
-                        {s}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* 🔋 BATTERY */}
-              <div className="accordion-item">
-                <h6 className="accordion-header">
-                  <button
-                    className="accordion-button collapsed"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#batteryCollapse"
-                  >
-                    Battery
-                  </button>
-                </h6>
-                <div id="batteryCollapse" className="accordion-collapse collapse">
-                  <div className="accordion-body">
-                    {["4000mAh", "4500mAh", "5000mAh", "6000mAh"].map((b) => (
-                      <div key={b}>
-                        <input
-                          type="checkbox"
-                          checked={filters.battery.includes(b)}
-                          onChange={() => toggleFilter("battery", b)}
-                        />{" "}
-                        {b}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-
-
-          {/* PRODUCTS */}
-          <div className="col-lg-9 col-md-8">
-            <div className="row g-3">
-
-              {/* 🔄 Loading skeletons */}
-              {loading &&
-                [...Array(6)].map((_, i) => (
-                  <div key={i} className="col-6 col-md-4">
-                    <ProductSkeleton />
-                  </div>
-                ))
-              }
-
-              {/* ❌ No products found */}
-              {!loading && products.length === 0 && (
-                <div className="col-12 text-center mt-5">
-                  <h4>No products found 😢</h4>
-                  <p>Try changing filters or search keyword</p>
-                </div>
-              )
-              }
-
-
-              {/* ✅ Products */}
-              {!loading &&
-                products.length > 0 && products.map((product) => (
-                  <div
-                    key={product._id}
-                    className="col-6 col-md-4 col-lg-3"
-                  >
-                    <div className="card h-100">
-                      <img
-                        src={product.images?.[0]}
-                        className="card-img-top"
-                        alt={product.name}
-                      />
-                      <div className="card-body">
-                        <h6
-                          style={{ cursor: "pointer" }}
-                          onClick={() =>
-                            navigate(`/product/${product._id}`)
-                          }
-                        >
-                          {product.name}
-                        </h6>
-
-                        {product.quantity === 0 ? (
-                          <span className="badge bg-danger">
-                            Out of stock
-                          </span>
-                        ) : (
-                          <RatingStars
-                            rating={product.averageRating}
-                          />
-                        )}
-
-                        <p className="fw-bold text-success">
-                          ₹{product.offerPrice}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            {/* PAGINATION */}
-            {!loading && totalProducts > itemsPerPage && (
-              <div className="d-flex justify-content-center mt-4">
-                <Pagination
-                  activePage={activePage}
-                  itemsCountPerPage={itemsPerPage}
-                  totalItemsCount={totalProducts}
-                  pageRangeDisplayed={5}
-                  onChange={handlePageChange}
-                  firstPageText="First"
-                  lastPageText="Last"
-                  prevPageText="Prev"
-                  nextPageText="Next"
-                  itemClass="page-item"
-                  linkClass="page-link"
+            {/* CITY / STATE / PIN */}
+            <div className="row mb-4">
+              <div className="col-md-4 mb-2">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="City"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
                 />
               </div>
-            )}
+
+              <div className="col-md-4 mb-2">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="State"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Pin Code"
+                  name="pincode"
+                  value={formData.pincode}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* SUBMIT */}
+            <button
+              type="submit"
+              className="btn btn-custom w-100"
+              disabled={loading}
+            >
+              {loading ? "Creating Account..." : "Create Account"}
+            </button>
+          </form>
+
+          {/* LOGIN LINK */}
+          <div className="login-text mt-3">
+            Already have an account?{" "}
+            <a href="/login">Login</a>
           </div>
         </div>
       </div>
@@ -411,4 +242,4 @@ const SearchProducts = () => {
   );
 };
 
-export default SearchProducts;
+// export default Register;

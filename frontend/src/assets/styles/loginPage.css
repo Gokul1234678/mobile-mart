@@ -1,0 +1,57 @@
+
+.body-con {
+  /* background-color: #f7f7f7; */
+  background-color: var(--voilet);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.login-container {
+  max-width: 500px;
+  max-height: 70vh;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;  
+  align-items: center;
+  
+}
+.cus-logo img {
+  max-width: 100px;
+  border-radius: 9px;
+ /*  justify-self: start; */
+
+}
+
+.title-welcome{
+  color: var(--voilet);
+}
+.login-btn {
+  max-width:100% ;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: larger;
+  background-color:var(--green) ;
+  color: white;
+  border:none
+}
+.login-btn:hover{
+    color: white;
+  background-color: #24963b;
+}
+.forgot-password {
+  font-size: 16px;
+  text-align: right;
+  display: block;
+}
+.register a {
+  /* color: #6a1b9a; */
+  text-decoration: none;
+}
+.input-group img {
+  width: 20px;
+}

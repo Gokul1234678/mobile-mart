@@ -1,0 +1,65 @@
+
+
+    .resgister-body {
+        /* background-color: #f8f9fa; */
+        /* background-color: var(--voilet); */
+        /* height: 100vh; */
+        /* font-family: 'Poppins', sans-serif; */
+    }
+    .resgister-container {
+        max-width: 900px;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin: 30px auto;
+    }
+    .header {
+        font-weight: bold;
+        color: #5b0fef;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+    }
+    .header img {
+        width: 90px;
+        border-radius: 8px;
+        margin-left: 10px;
+    }
+    .sub-header {
+        color: #000000;
+        font-size: 1rem;
+        margin-top: 10px;
+        text-align: start;
+    }
+    .form-control {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #5b0fef;
+    }
+    .btn-custom {
+        background-color: var(--green);
+        color: #fff;
+        padding: 10px;
+        font-size: 1rem;
+        border: none;
+    }
+    .btn-custom:hover {
+        color: #fff;
+        background-color: #218838;
+    }
+    .login-text {
+        text-align: center;
+        margin-top: 10px;
+    }
+    .login-text a {
+        text-decoration: none;
+        color: #5b0fef;
+        font-weight: bold;
+    }
+    .login-text a:hover {
+        text-decoration: underline;
+    }

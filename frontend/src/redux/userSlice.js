@@ -9,7 +9,6 @@ import axiosInstance from "../axios_instance";
 /* ======================================================
    🔐 LOGIN ACTION (ASYNC)
    ====================================================== */
-
 /*
   createAsyncThunk creates 3 action types automatically:
   1️⃣ loginUser.pending
@@ -105,6 +104,22 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+// Load user data on app start (if cookie exists)
+export const loadUser = createAsyncThunk(
+  "user/loadUser",
+  async (_, thunkAPI) => {
+    try {
+      const { data } = await axiosInstance.get("/api/myprofile", {
+        withCredentials: true
+      });
+
+      return data.user;
+    } catch (error) {
+      return thunkAPI.rejectWithValue("Not authenticated");
+    }
+  }
+);
+
 
 /* ======================================================
    👤 USER SLICE
@@ -120,7 +135,7 @@ const userSlice = createSlice({
   */
   initialState: {
     user: null,             // Will store user object after login
-    loading: false,         // True while API call is running
+    loading: true,         // True while API call is running
     error: null,            // Stores login error message
     isAuthenticated: false, // True after successful login
   },
@@ -197,6 +212,22 @@ const userSlice = createSlice({
         state.isAuthenticated = false;
         state.error = null;
       })
+
+
+      .addCase(loadUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(loadUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(loadUser.rejected, (state) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+      });
+
+
 
   },
 });

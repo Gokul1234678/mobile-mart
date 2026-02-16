@@ -1,245 +1,309 @@
-// React
-import React, { useState } from "react";
-
-// Router
-import { useNavigate } from "react-router-dom";
-
-// API
+import React, { useState, useEffect } from "react";
 import axiosInstance from "../axios_instance";
+import { toast } from "react-toastify";
+import "../assets/styles/profile.css";
 
-// SEO
-import { Helmet } from "react-helmet-async";
+const MyProfile = () => {
+  const [activeTab, setActiveTab] = useState("profile");
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-// Toast
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
-// Styles
-import "../assets/styles/register.css";
-
-const Register = () => {
-  const navigate = useNavigate();
-
-  // -----------------------------
-  // STATE
-  // -----------------------------
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
     phone: "",
     gender: "",
     street: "",
     city: "",
     state: "",
-    pincode: "",
+    pincode: ""
   });
 
-  // -----------------------------
-  // HANDLE CHANGE
-  // -----------------------------
+  // ================= LOAD USER =================
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data } = await axiosInstance.get("/api/myprofile", {
+          withCredentials: true
+        });
+
+        setUser(data.user);
+
+        setFormData({
+          name: data.user.name || "",
+          phone: data.user.phone || "",
+          gender: data.user.gender || "",
+          street: data.user.address?.street || "",
+          city: data.user.address?.city || "",
+          state: data.user.address?.state || "",
+          pincode: data.user.address?.pincode || ""
+        });
+
+        setLoading(false);
+      } catch (error) {
+        toast.error("Failed to load profile");
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  // ================= HANDLE CHANGE =================
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // -----------------------------
-  // SUBMIT
-  // -----------------------------
-  const submitHandler = async (e) => {
-    e.preventDefault();
-
-    // 🔴 Validation
-    // if (!formData.name!formData.email!formData.password) {
-    //   toast.error("Name, Email and Password are required");
-    //   return;
-    // }
-
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
+  // ================= SAVE PROFILE =================
+  const saveProfile = async () => {
     try {
-      setLoading(true);
-
-      const res = await axiosInstance.post("/api/register", {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone,
-        gender: formData.gender,
-        street: formData.street,
-        city: formData.city,
-        state: formData.state,
-        pincode: formData.pincode,
-      });
-
-      toast.success(res.data.message || "Account created successfully");
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
-
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Registration failed"
+      const { data } = await axiosInstance.put(
+        "/api/update-profile",
+        formData,
+        { withCredentials: true }
       );
-    } finally {
-      setLoading(false);
+
+      toast.success(data.message);
+      setEditingProfile(false);
+      setEditingAddress(false);
+      setUser(data.user);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Update failed");
     }
   };
+
+  if (loading) return <h3 className="text-center mt-5">Loading...</h3>;
 
   return (
-    <>
-      {/* ================= SEO ================= */}
-      <Helmet>
-        <title>Register | Mobile Mart</title>
-        <meta
-          name="description"
-          content="Create a new account on Mobile Mart"
+    <div className="container my-5">
+      {/* ================= TOP USER INFO ================= */}
+      <div className="d-flex align-items-center mb-4">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+          width="80"
+          alt="user"
         />
-      </Helmet>
+        <div className="ms-3">
+          <h2 className="text-primary">Welcome</h2>
+          <h5>{user.name}</h5>
+        </div>
+      </div>
 
-      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="row">
+        {/* ================= SIDEBAR ================= */}
+        <div className="col-md-3">
+          <div className="card p-3">
+            <h5 className="text-center mb-3">Account Settings</h5>
+            <hr />
 
-      {/* ================= REGISTER UI ================= */}
-      <div className="container register-page">
-        <div className="register-card text-center">
+            <button
+              className={`btn mb-2 ${activeTab === "profile" ? "btn-primary" : "btn-light"}`}
+              onClick={() => setActiveTab("profile")}
+            >
+              <i className="bi bi-person me-2"></i> 
+              Profile Information
+            </button>
 
-          {/* LOGO */}
-          <div className="cus-logo d-flex justify-content-start mb-3">
-            <img src="/logo.png" alt="Mobile Mart" />
+            <button
+              className={`btn mb-2 ${activeTab === "address" ? "btn-primary" : "btn-light"}`}
+              onClick={() => setActiveTab("address")}
+            >
+            <i className="bi bi-geo-alt me-2"></i>
+             Your Address
+            </button>
+
+            <button
+              className={`btn mb-2 ${activeTab === "password" ? "btn-primary" : "btn-light"}`}
+              onClick={() => setActiveTab("password")}
+            >
+              <i className="bi bi-lock me-2"></i>
+              Change Password
+            </button>
+
+            <hr />
+
+            <button className="btn btn-light mb-2"> <i className="bi bi-bag me-2"></i>
+              My Orders
+            </button>
+
+            <button className="btn btn-light mb-2"> <i className="bi bi-cart me-2"></i>
+              My Cart
+            </button>
+
+            <button className="btn btn-danger"> <i className="bi bi-trash me-2"></i>
+              Delete My Account
+            </button>
           </div>
+        </div>
 
-          {/* HEADING */}
-          <h2 className="fw-bold">Create Account</h2>
-          <p className="text-muted mb-4">
-            Find the Perfect Fit for Your Pocket
-          </p>
+        {/* ================= CONTENT ================= */}
+        <div className="col-md-9">
 
-          {/* FORM */}
-          <form onSubmit={submitHandler}>
+          {/* ================= PROFILE TAB ================= */}
+          {activeTab === "profile" && (
+            <>
+              <h4>
+                Profile Information{" "}
+                <span
+                  className="text-primary cursor-pointer"
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    editingProfile ? saveProfile() : setEditingProfile(true)
+                  }
+                >
+                  {editingProfile ? "Save" : "Edit"}
+                </span>
+              </h4>
 
-            {/* NAME */}
-            <input
-              type="text"
-              className="form-control mb-3"
-              placeholder="Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-            />
-
-            {/* EMAIL */}
-            <input
-              type="email"
-              className="form-control mb-3"
-              placeholder="Email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-
-            {/* PASSWORD */}
-            <input
-              type="password"
-              className="form-control mb-3"
-              placeholder="Password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-            />
-            {/* CONFIRM PASSWORD */}
-            <input
-              type="password"
-              className="form-control mb-4"
-              placeholder="Confirm Password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-
-            {/* ADDRESS LABEL */}
-            <label className="form-label fw-bold my-3 text-start w-100">
-              Add Address Details:
-            </label>
-
-            {/* STREET */}
-            <textarea
-              className="form-control mb-3"
-              rows="2"
-              placeholder="Enter Street Address"
-              name="street"
-              value={formData.street}
-              onChange={handleChange}
-            />
-
-            {/* CITY / STATE / PIN */}
-            <div className="row mb-4">
-              <div className="col-md-4 mb-2">
+              <div className="mb-3">
+                <label>Name</label>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="City"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  readOnly={!editingProfile}
+                />
+              </div>
+
+              <div className="mb-3">
+                <label>Email</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  value={user.email}
+                  readOnly
+                />
+              </div>
+
+              <div className="mb-3">
+                <label>Mobile</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  readOnly={!editingProfile}
+                />
+              </div>
+
+              <div className="mb-3">
+                <label>Gender</label><br />
+                <input
+                  type="radio"
+                  name="gender"
+                  value="male"
+                  checked={formData.gender === "male"}
+                  onChange={handleChange}
+                  disabled={!editingProfile}
+                /> Male
+
+                <input
+                  type="radio"
+                  name="gender"
+                  value="female"
+                  className="ms-3"
+                  checked={formData.gender === "female"}
+                  onChange={handleChange}
+                  disabled={!editingProfile}
+                /> Female
+              </div>
+            </>
+          )}
+
+          {/* ================= ADDRESS TAB ================= */}
+          {activeTab === "address" && (
+            <>
+              <h4>
+                Your Address{" "}
+                <span
+                  style={{ cursor: "pointer" }}
+                  className="text-primary"
+                  onClick={() =>
+                    editingAddress ? saveProfile() : setEditingAddress(true)
+                  }
+                >
+                  {editingAddress ? "Save" : "Edit"}
+                </span>
+              </h4>
+
+              <div className="mb-3">
+                <label>Street</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="street"
+                  value={formData.street}
+                  onChange={handleChange}
+                  readOnly={!editingAddress}
+                />
+              </div>
+
+              <div className="mb-3">
+                <label>City</label>
+                <input
+                  type="text"
+                  className="form-control"
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
+                  readOnly={!editingAddress}
                 />
               </div>
 
-              <div className="col-md-4 mb-2">
+              <div className="mb-3">
+                <label>State</label>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="State"
                   name="state"
                   value={formData.state}
                   onChange={handleChange}
+                  readOnly={!editingAddress}
                 />
               </div>
 
-              <div className="col-md-4">
+              <div className="mb-3">
+                <label>Pincode</label>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Pin Code"
                   name="pincode"
                   value={formData.pincode}
                   onChange={handleChange}
+                  readOnly={!editingAddress}
                 />
               </div>
-            </div>
+            </>
+          )}
 
-            {/* SUBMIT */}
-            <button
-              type="submit"
-              className="btn btn-custom w-100"
-              disabled={loading}
-            >
-              {loading ? "Creating Account..." : "Create Account"}
-            </button>
-          </form>
+          {/* ================= PASSWORD TAB ================= */}
+          {activeTab === "password" && (
+            <>
+              <h4>Change Password</h4>
+              <div className="mb-3">
+                <label>Current Password</label>
+                <input type="password" className="form-control" />
+              </div>
 
-          {/* LOGIN LINK */}
-          <div className="login-text mt-3">
-            Already have an account?{" "}
-            <a href="/login">Login</a>
-          </div>
+              <div className="mb-3">
+                <label>New Password</label>
+                <input type="password" className="form-control" />
+              </div>
+
+              <button className="btn btn-success">
+                Change Password
+              </button>
+            </>
+          )}
+
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
-// export default Register;
+export default MyProfile;

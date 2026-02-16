@@ -1,154 +1,238 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { logoutUser } from "../redux/userSlice";
-import { toast, ToastContainer } from "react-toastify";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import axiosInstance from "../axios_instance";
+import { toast } from "react-toastify";
+import "../assets/styles/profile.css";
+const MyProfile = () => {
+  const [activeTab, setActiveTab] = useState("profile");
+  const [loadingSave, setLoadingSave] = useState(false);
+  const [user, setUser] = useState(null);
+  const [editProfile, setEditProfile] = useState(false);
+  const [editAddress, setEditAddress] = useState(false);
 
-// Images
-import logo from "../assets/img/icons/logo.png";
-import searchIcon from "../assets/img/icons/search.png";
-import loginIcon from "../assets/img/icons/log in.png";
-import userIcon from "../assets/img/icons/user.png";
-import parcelIcon from "../assets/img/icons/parcel.png";
-import cartIcon from "../assets/img/icons/cart2.png";
-import logout3 from "../assets/img/icons/logout 3.png";
-import logoutIcon from "../assets/img/icons/logout.png";
-import shoppingCart from "../assets/img/icons/shopping-cart.png";
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
-import "../assets/styles/navbar.css";
-import "react-toastify/dist/ReactToastify.css";
-
-const Navbar = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  // 🔥 LOGOUT LOADING STATE
-  const [logoutLoading, setLogoutLoading] = useState(false);
-
-  const logoutHandler = async () => {
-    setLogoutLoading(true);
-
+  const fetchProfile = async () => {
     try {
-      await dispatch(logoutUser()).unwrap();
-      toast.success("Logged out successfully");
+      const res = await axiosInstance.get("/api/myprofile", {
+        withCredentials: true,
+      });
+      setUser(res.data.user);
     } catch (err) {
-      console.warn("Logout API failed:", err);
-      toast.warning("Logged out locally");
-    } finally {
-      setLogoutLoading(false);
-      navigate("/login");
+      toast.error("Failed to load profile");
     }
   };
 
+  const saveProfile = async () => {
+    try {
+      setLoadingSave(true);
+
+      await axiosInstance.put(
+        "/api/update-profile",
+        {
+          name: user.name,
+          phone: user.phone,
+          gender: user.gender,
+        },
+        { withCredentials: true }
+      );
+
+      toast.success("Profile Updated!");
+      setEditProfile(false);
+    } catch (err) {
+      toast.error("Update failed");
+    } finally {
+      setLoadingSave(false);
+    }
+  };
+
+  if (!user) return <div className="text-center mt-5">Loading...</div>;
+
   return (
-    <>
-      {/* ✅ REQUIRED for toast to show */}
-      <ToastContainer position="top-right" autoClose={3000} />
+    <div className="container my-4">
 
-      <nav className="navbar navbar-expand-lg" style={{ backgroundColor: "var(--voilet)" }}>
-        <div className="container-fluid ms-lg-2 me-lg-2">
+      {/* Mobile Menu Button */}
+      <div className="d-md-none mb-3">
+        <button
+          className="btn btn-primary"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#profileMenu"
+        >
+          Open Menu
+        </button>
+      </div>
 
-          {/* Brand Logo */}
-          <Link className="navbar-brand" to="/">
-            <img src={logo} className="cus-logo img-fluid" alt="MobileMart Logo" width="180" />
-          </Link>
+      <div className="row">
 
-          {/* Toggler */}
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-          >
-            <i className="fa-solid fa-bars" style={{ color: "#fff", fontSize: "40px" }}></i>
-          </button>
+        {/* Sidebar Desktop */}
+        <div className="col-md-3 d-none d-md-block">
+          <div className="list-group">
+            <button
+              className={`list-group-item sidebar-btn ${activeTab === "profile" ? "active" : ""}`}
+              onClick={() => setActiveTab("profile")}
+            >
+              <i className="bi bi-person me-2"></i> Profile Information
+            </button>
 
-          <div className="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul className="nav navbar-nav ms-auto align-items-lg-center">
+            <button
+              className={`list-group-item sidebar-btn ${activeTab === "address" ? "active" : ""}`}
+              onClick={() => setActiveTab("address")}
+            >
+              <i className="bi bi-geo-alt me-2"></i> Your Address
+            </button>
 
-              {/* Desktop Search */}
-              <li className="nav-item d-none d-lg-flex">
-                <Link to="/search" className="nav-link">
-                  <img src={searchIcon} alt="Search" width="40" />
-                </Link>
-              </li>
+            <button
+              className={`list-group-item sidebar-btn ${activeTab === "password" ? "active" : ""}`}
+              onClick={() => setActiveTab("password")}
+            >
+              <i className="bi bi-lock me-2"></i> Change Password
+            </button>
 
-              {/* Mobile Search */}
-              <li
-                className="nav-item d-lg-none py-2"
-                onClick={() => navigate("/search")}
-                style={{ cursor: "pointer" }}
-              >
-                <span className="nav-link">Search</span>
-              </li>
+            <button className="list-group-item">
+              <i className="bi bi-bag me-2"></i> My Orders
+            </button>
 
-              {/* Dropdown (Desktop) */}
-              <li className="nav-item dropdown d-none d-lg-flex ms-2">
-                <img src={loginIcon} alt="User" width="40" />
-                <a className="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown">
-                  Gokul Selvan
-                </a>
+            <button className="list-group-item">
+              <i className="bi bi-cart me-2"></i> My Cart
+            </button>
 
-                <ul className="dropdown-menu">
-                  <li>
-                    <Link className="dropdown-item" to="/account-settings">My Profile</Link>
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" to="/my-orders">My Orders</Link>
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" to="/cart">My Cart</Link>
-                  </li>
-                  <li><hr className="dropdown-divider" /></li>
-
-                  <li>
-                    <button
-                      className="dropdown-item text-danger"
-                      onClick={logoutHandler}
-                      disabled={logoutLoading}
-                    >
-                      {logoutLoading ? "Logging out..." : "Log Out"}
-                    </button>
-                  </li>
-                </ul>
-              </li>
-
-              {/* Mobile Logout */}
-              <li className="nav-item d-lg-none text-center py-2">
-                <button
-                  onClick={logoutHandler}
-                  className="nav-link fw-bold bg-white rounded-3 border-0 w-100"
-                  disabled={logoutLoading}
-                  style={{ color: "red" }}
-                >
-                  {logoutLoading ? "Logging out..." : "Log out"}
-                </button>
-              </li>
-
-              {/* Desktop Cart */}
-              <li className="nav-item d-none d-lg-flex">
-                <Link to="/cart" className="nav-link">
-                  <img src={shoppingCart} alt="Cart" width="40" />
-                </Link>
-              </li>
-
-              {/* Desktop Logout Icon */}
-              <li className="nav-item d-none d-lg-flex">
-                <button
-                  onClick={logoutHandler}
-                  className="nav-link border-0 bg-transparent"
-                  disabled={logoutLoading}
-                >
-                  <img src={logoutIcon} alt="Logout" width="42" />
-                </button>
-              </li>
-
-            </ul>
+            <button className="list-group-item text-danger">
+              <i className="bi bi-trash me-2"></i> Delete Account
+            </button>
           </div>
         </div>
-      </nav>
-    </>
+
+        {/* Offcanvas Mobile */}
+        <div className="offcanvas offcanvas-start" id="profileMenu">
+          <div className="offcanvas-header">
+            <h5>Menu</h5>
+            <button className="btn-close" data-bs-dismiss="offcanvas"></button>
+          </div>
+          <div className="offcanvas-body">
+            <button className="btn sidebar-btn" onClick={() => setActiveTab("profile")}>
+              <i className="bi bi-person me-2"></i> Profile Information
+            </button>
+            <button className="btn sidebar-btn" onClick={() => setActiveTab("address")}>
+              <i className="bi bi-geo-alt me-2"></i> Your Address
+            </button>
+            <button className="btn sidebar-btn" onClick={() => setActiveTab("password")}>
+              <i className="bi bi-lock me-2"></i> Change Password
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="col-md-9 tab-content-wrapper fade-slide">
+
+          {activeTab === "profile" && (
+            <div>
+              <h4>
+                Profile Information{" "}
+                <button
+                  className="btn btn-link"
+                  onClick={() =>
+                    editProfile ? saveProfile() : setEditProfile(true)
+                  }
+                >
+                  {editProfile ? "Save" : "Edit"}
+                </button>
+              </h4>
+
+              <input
+                className="form-control mb-2"
+                value={user.name}
+                disabled={!editProfile}
+                onChange={(e) =>
+                  setUser({ ...user, name: e.target.value })
+                }
+              />
+
+              <input
+                className="form-control mb-2"
+                value={user.email}
+                disabled
+              />
+
+              <input
+                className="form-control mb-2"
+                value={user.phone}
+                disabled={!editProfile}
+                onChange={(e) =>
+                  setUser({ ...user, phone: e.target.value })
+                }
+              />
+
+              {/* Gender */}
+              <div>
+                <label>
+                  <input
+                    type="radio"
+                    value="male"
+                    checked={user.gender === "male"}
+                    disabled={!editProfile}
+                    onChange={(e) =>
+                      setUser({ ...user, gender: e.target.value })
+                    }
+                  /> Male
+                </label>
+
+                <label className="ms-3">
+                  <input
+                    type="radio"
+                    value="female"
+                    checked={user.gender === "female"}
+                    disabled={!editProfile}
+                    onChange={(e) =>
+                      setUser({ ...user, gender: e.target.value })
+                    }
+                  /> Female
+                </label>
+              </div>
+
+              {/* Spinner */}
+              {loadingSave && (
+                <div className="mt-3">
+                  <div className="spinner-border text-primary"></div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "address" && (
+            <div>
+              <h4>Your Address</h4>
+              <input
+                className="form-control mb-2"
+                value={user.address?.street || ""}
+                disabled
+              />
+            </div>
+          )}
+
+          {activeTab === "password" && (
+            <div>
+              <h4>Change Password</h4>
+              <input
+                type="password"
+                className="form-control mb-2"
+                placeholder="Current Password"
+              />
+              <input
+                type="password"
+                className="form-control mb-2"
+                placeholder="New Password"
+              />
+              <button className="btn btn-success">
+                Change Password
+              </button>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default Navbar;
+export default MyProfile;

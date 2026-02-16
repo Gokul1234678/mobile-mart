@@ -17,6 +17,7 @@ import logoutIcon from "../assets/img/icons/logout.png";
 import shoppingCart from "../assets/img/icons/shopping-cart.png";
 import { useNavigate, Link } from "react-router-dom";
 
+import MyProfile from '../pages/MyProfile';
 import "../assets/styles/navbar.css"
 
 
@@ -29,7 +30,7 @@ const Navbar = () => {
 
   const {user, isAuthenticated} = useSelector((state) => state.user);
 
-console.log(isAuthenticated);
+// console.log(isAuthenticated);
 
 
   const logoutHandler = async () => {
@@ -157,6 +158,7 @@ console.log(isAuthenticated);
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
+                  
                   {user?.name || "User"}
 
                 </a>
@@ -164,7 +166,7 @@ console.log(isAuthenticated);
                 <ul className="dropdown-menu">
                   <li className="d-flex align-items-center justify-content-between ps-2">
                     <img src={userIcon} alt="Profile" />
-                    <Link className="dropdown-item" to="/account-settings">
+                    <Link className="dropdown-item" to="/profile">
                       My Profile
                     </Link>
                   </li>

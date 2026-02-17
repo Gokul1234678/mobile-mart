@@ -156,8 +156,6 @@ userSchema.methods.getResetPasswordToken = function () {
   // }
 
 
-
-
   // ------------------------------------------------------------
   // 1️⃣ GENERATE A RANDOM RESET TOKEN
   // ------------------------------------------------------------
@@ -275,22 +273,34 @@ app.post("/api/forgot-password", async (req, res) => {
     // ------------------------------------------------------------
     // 4️⃣ Create Reset URL (works for localhost & production)
     // ------------------------------------------------------------
-    const resetUrl = `${req.protocol}://${req.get("host")}/api/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    // http://localhost:5173/reset-password/34f9a8a0d92f5b47eaed23d9c2f01b
+
+    //old one--> const resetUrl = `${req.protocol}://${req.get("host")}/api/reset-password/${resetToken}`;
     // http://localhost:5000/api/reset-password/34f9a8a0d92f5b47eaed23d9c2f01b
 
 
     // ------------------------------------------------------------
     // 5️⃣ Prepare email message
-    // ------------------------------------------------------------
+    // -----------------------------------------------------------
     const message = `
-You requested a password reset.
+Hello ${user.name},
 
-Click the link below to reset your password:
+We received a request to reset your MobileMart account password.
+
+This reset link will expire in 15 minutes.
+
+To reset your password, click the link below:
 
 ${resetUrl}
 
 If you did not request this, please ignore this email.
+Your password will remain unchanged.
+
+Thank you,
+MobileMart Team
 `;
+
 
 
     // ------------------------------------------------------------
@@ -588,19 +598,19 @@ app.post("/api/login", async (req, res) => {
 
 
 // ✅ Logout API
-app.get("/api/logout", isAuthenticatedUser,async function (req, res) {
-    
-    // Remove token from cookies by setting it to null & expiring immediately
-    res.cookie("token", null, {
-      httpOnly: true,
-      expires: new Date(0) // Cookie expires immediately
-    });
+app.get("/api/logout", isAuthenticatedUser, async function (req, res) {
 
-    return res.status(200).json({
-      success: true,
-      message: "Logout successful! Token removed."
-    });
+  // Remove token from cookies by setting it to null & expiring immediately
+  res.cookie("token", null, {
+    httpOnly: true,
+    expires: new Date(0) // Cookie expires immediately
   });
+
+  return res.status(200).json({
+    success: true,
+    message: "Logout successful! Token removed."
+  });
+});
 
 
 // ✅ Get Logged-in User Details

@@ -8,6 +8,11 @@ import SearchProducts from "./pages/SearchProducts";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyProfile from "./pages/MyProfile";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
+
+
 
 // TOASTIFY for notifications
 import { ToastContainer } from "react-toastify";
@@ -65,6 +70,12 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+         
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+       
+       
         </Routes>
       </BrowserRouter>
     </>

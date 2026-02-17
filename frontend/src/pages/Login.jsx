@@ -117,94 +117,96 @@ const Login = () => {
 
   return (
     <>
-    <div className="body-con">
-      {/* ================= SEO ================= */}
-      <Helmet>
-        <title>Login | Mobile Mart</title>
-        <meta
-          name="description"
-          content="Login to Mobile Mart to explore the best smartphone deals."
-        />
-      </Helmet>
+      <div className="body-con">
+        {/* ================= SEO ================= */}
+        <Helmet>
+          <title>Login | Mobile Mart</title>
+          <meta
+            name="description"
+            content="Login to Mobile Mart to explore the best smartphone deals."
+          />
+        </Helmet>
 
-      <ToastContainer 
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-      />
-      {/* showing eorror if password or email is incorrect */}
-      {/* {
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          hideProgressBar={false}
+        />
+        {/* showing eorror if password or email is incorrect */}
+        {/* {
         error && (
           <p className="text-danger text-center mt-2 fa-2">
             {error}
           </p>
         )
       } */}
-      {/* ================= LOGIN CONTAINER ================= */}
-      <div className="login-container text-center">
+        {/* ================= LOGIN CONTAINER ================= */}
+        <div className="login-container text-center">
 
-        {/* LOGO */}
-        <div className="cus-logo login-logo mb-3">
-          <img src={logo} alt="Mobile Mart" />
+          {/* LOGO */}
+          <div className="cus-logo login-logo mb-3">
+            <img src={logo} alt="Mobile Mart" />
+          </div>
+
+          {/* HEADING */}
+          <h2 className="fw-bold title-welcome">Welcome Back!</h2>
+          <p className="text-muted">Find the Perfect Fit for Your Pocket</p>
+
+          {/* ================= LOGIN FORM ================= */}
+          <form onSubmit={submitHandler}>
+
+            {/* EMAIL INPUT */}
+            <div className="input-group mb-3">
+              <span className="input-group-text bg-light">
+                <i className="fas fa-envelope"></i>
+              </span>
+              <input
+                type="email"
+                className="form-control"
+                placeholder="Enter The Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)} // update state
+                required
+              />
+            </div>
+
+            {/* PASSWORD INPUT */}
+            <div className="input-group mb-2">
+              <span className="input-group-text bg-light">
+                <i className="fas fa-lock"></i>
+              </span>
+              <input
+                type="password"
+                className="form-control"
+                placeholder="Enter The Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} // update state
+                required
+              />
+            </div>
+
+            {/* FORGOT PASSWORD LINK */}
+
+            <Link to="/forgot-password" className="text-primary forgot-password">
+              Forgot Password?
+            </Link>
+
+
+            {/* SUBMIT BUTTON */}
+            <button
+              type="submit"
+              className="login-btn  w-100 mt-3"
+              disabled={loading} // disable while API call is running
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
+
+          {/* REGISTER LINK */}
+          <p className="mt-4">
+            Don’t have an account? <Link to="/register">Register</Link>
+          </p>
         </div>
-
-        {/* HEADING */}
-        <h2 className="fw-bold title-welcome">Welcome Back!</h2>
-        <p className="text-muted">Find the Perfect Fit for Your Pocket</p>
-
-        {/* ================= LOGIN FORM ================= */}
-        <form onSubmit={submitHandler}>
-
-          {/* EMAIL INPUT */}
-          <div className="input-group mb-3">
-            <span className="input-group-text bg-light">
-              <i className="fas fa-envelope"></i>
-            </span>
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Enter The Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)} // update state
-              required
-            />
-          </div>
-
-          {/* PASSWORD INPUT */}
-          <div className="input-group mb-2">
-            <span className="input-group-text bg-light">
-              <i className="fas fa-lock"></i>
-            </span>
-            <input
-              type="password"
-              className="form-control"
-              placeholder="Enter The Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)} // update state
-              required
-            />
-          </div>
-
-          {/* FORGOT PASSWORD LINK */}
-          <a href="#" className="forgot-password">
-            Forget Password?
-          </a>
-
-          {/* SUBMIT BUTTON */}
-          <button
-            type="submit"
-            className="login-btn  w-100 mt-3"
-            disabled={loading} // disable while API call is running
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-
-        {/* REGISTER LINK */}
-        <p className="mt-4">
-          Don’t have an account? <Link to="/register">Register</Link>
-        </p>
-      </div>
       </div>
     </>
   );

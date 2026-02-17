@@ -1,0 +1,112 @@
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f5f6fa;
+}
+
+.auth-logo img {
+  width: 180px;
+  margin-bottom: 20px;
+}
+
+.auth-card {
+  background: white;
+  padding: 30px;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.auth-input {
+  height: 50px;
+  font-size: 16px;
+}
+
+.auth-btn {
+  height: 48px;
+  font-weight: 600;
+}
+
+
+
+
+
+
+/* =========================================
+   AUTH CONTAINER
+========================================= */
+
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f5f6fa;
+  padding: 20px;
+}
+
+/* =========================================
+   LOGO
+========================================= */
+
+.auth-logo img {
+  width: 180px;
+  margin-bottom: 20px;
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.auth-card {
+  background: white;
+  padding: 35px;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* =========================================
+   INPUTS
+========================================= */
+
+.auth-input {
+  height: 50px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.input-group-text {
+  background: white;
+  cursor: pointer;
+}
+
+/* =========================================
+   BUTTON
+========================================= */
+
+.auth-btn {
+  height: 48px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* =========================================
+   MOBILE RESPONSIVE
+========================================= */
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 25px;
+  }
+
+  .auth-logo img {
+    width: 140px;
+  }
+}

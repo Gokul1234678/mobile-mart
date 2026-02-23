@@ -10,10 +10,13 @@ import axiosInstance from "../axios_instance";
 // Components
 import Navbar from "../components/Navbar";
 import RatingStars from "../components/RatingStars";
-import ProductSkeleton from "../components/ProductSkeleton";
+// import ProductSkeleton from "../components/ProductSkeleton";
 
 // for title and meta tags
 import { Helmet } from "react-helmet-async";
+
+import { useDispatch } from "react-redux";
+import { addToCart } from "../redux/cartSlice";
 
 
 // Styles
@@ -27,12 +30,15 @@ const ProductView = () => {
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
 
+const dispatch = useDispatch();
+
+
   useEffect(() => {
     async function fetchProduct() {
       try {
         const res = await axiosInstance.get(`/api/product/${id}`);
         setProduct(res.data.product);
-        console.log(res.data.product);
+        // console.log(res.data.product);
       } catch (err) {
         console.error("Failed to fetch product", err);
       } finally {
@@ -187,6 +193,11 @@ const ProductView = () => {
               <button
                 className="btn-add-to-cart"
                 disabled={product.quantity === 0}
+                onClick={()=>dispatch(addToCart({
+                      ...product,
+                      quantity: qty,   // 🔥 THIS IS IMPORTANT
+                      stock: product.quantity   // 🔥 SAVE STOCK
+                    }))}
               >
                 <i className="bi bi-cart me-1"></i> Add to Cart
               </button>

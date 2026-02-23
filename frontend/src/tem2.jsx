@@ -1,238 +1,193 @@
-import React, { useState, useEffect } from "react";
-import axiosInstance from "../axios_instance";
-import { toast } from "react-toastify";
-import "../assets/styles/profile.css";
-const MyProfile = () => {
-  const [activeTab, setActiveTab] = useState("profile");
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [user, setUser] = useState(null);
-  const [editProfile, setEditProfile] = useState(false);
-  const [editAddress, setEditAddress] = useState(false);
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  removeFromCart,
+  increaseQuantity,
+  decreaseQuantity,
+} from "../redux/cartSlice";
+import { Link } from "react-router-dom";
+import "../assets/styles/cart.css";
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+const Cart = () => {
+  const dispatch = useDispatch();
 
-  const fetchProfile = async () => {
-    try {
-      const res = await axiosInstance.get("/api/myprofile", {
-        withCredentials: true,
-      });
-      setUser(res.data.user);
-    } catch (err) {
-      toast.error("Failed to load profile");
-    }
-  };
+  // =====================================
+  // Get cart items from Redux store
+  // =====================================
+  const { cartItems } = useSelector((state) => state.cart);
 
-  const saveProfile = async () => {
-    try {
-      setLoadingSave(true);
+  // =====================================
+  // Calculate pricing details
+  // =====================================
+  const itemsPrice = cartItems.reduce(
+    (acc, item) => acc + item.offerPrice * item.quantity,
+    0
+  );
 
-      await axiosInstance.put(
-        "/api/update-profile",
-        {
-          name: user.name,
-          phone: user.phone,
-          gender: user.gender,
-        },
-        { withCredentials: true }
-      );
+  const taxPrice = itemsPrice * 0.05;
+  const deliveryCharge = itemsPrice > 0 ? 100 : 0;
+  const platformFee = itemsPrice > 0 ? 5 : 0;
 
-      toast.success("Profile Updated!");
-      setEditProfile(false);
-    } catch (err) {
-      toast.error("Update failed");
-    } finally {
-      setLoadingSave(false);
-    }
-  };
-
-  if (!user) return <div className="text-center mt-5">Loading...</div>;
+  const totalPrice =
+    itemsPrice + taxPrice + deliveryCharge + platformFee;
 
   return (
-    <div className="container my-4">
+    <div className="container py-4">
+      <h1 className="mb-4 fw-bold">Cart Items</h1>
 
-      {/* Mobile Menu Button */}
-      <div className="d-md-none mb-3">
-        <button
-          className="btn btn-primary"
-          data-bs-toggle="offcanvas"
-          data-bs-target="#profileMenu"
-        >
-          Open Menu
-        </button>
-      </div>
-
-      <div className="row">
-
-        {/* Sidebar Desktop */}
-        <div className="col-md-3 d-none d-md-block">
-          <div className="list-group">
-            <button
-              className={`list-group-item sidebar-btn ${activeTab === "profile" ? "active" : ""}`}
-              onClick={() => setActiveTab("profile")}
-            >
-              <i className="bi bi-person me-2"></i> Profile Information
-            </button>
-
-            <button
-              className={`list-group-item sidebar-btn ${activeTab === "address" ? "active" : ""}`}
-              onClick={() => setActiveTab("address")}
-            >
-              <i className="bi bi-geo-alt me-2"></i> Your Address
-            </button>
-
-            <button
-              className={`list-group-item sidebar-btn ${activeTab === "password" ? "active" : ""}`}
-              onClick={() => setActiveTab("password")}
-            >
-              <i className="bi bi-lock me-2"></i> Change Password
-            </button>
-
-            <button className="list-group-item">
-              <i className="bi bi-bag me-2"></i> My Orders
-            </button>
-
-            <button className="list-group-item">
-              <i className="bi bi-cart me-2"></i> My Cart
-            </button>
-
-            <button className="list-group-item text-danger">
-              <i className="bi bi-trash me-2"></i> Delete Account
-            </button>
-          </div>
+      {/* =====================================
+          EMPTY CART UI
+      ===================================== */}
+      {cartItems.length === 0 ? (
+        <div className="text-center">
+          <h4>Your cart is empty</h4>
+          <Link to="/" className="btn btn-primary mt-3">
+            Go Shopping
+          </Link>
         </div>
+      ) : (
+        <>
+          {/* =====================================
+              CART ITEMS LIST
+          ===================================== */}
+          {cartItems.map((item) => (
+            <div
+              key={item._id} // ✅ Unique key required for React list rendering
+              className="col-12 cart-item d-flex justify-content-between align-items-center border p-3 rounded mb-3"
+            >
+              {/* ================= LEFT SECTION ================= */}
+              <div className="d-flex align-items-center">
+                <img
+                  src={item.images?.[0] || "/default-image.png"}
+                  alt={item.name}
+                  width="120"
+                />
 
-        {/* Offcanvas Mobile */}
-        <div className="offcanvas offcanvas-start" id="profileMenu">
-          <div className="offcanvas-header">
-            <h5>Menu</h5>
-            <button className="btn-close" data-bs-dismiss="offcanvas"></button>
-          </div>
-          <div className="offcanvas-body">
-            <button className="btn sidebar-btn" onClick={() => setActiveTab("profile")}>
-              <i className="bi bi-person me-2"></i> Profile Information
-            </button>
-            <button className="btn sidebar-btn" onClick={() => setActiveTab("address")}>
-              <i className="bi bi-geo-alt me-2"></i> Your Address
-            </button>
-            <button className="btn sidebar-btn" onClick={() => setActiveTab("password")}>
-              <i className="bi bi-lock me-2"></i> Change Password
-            </button>
-          </div>
-        </div>
+                <div className="ms-3">
+                  <p className="mb-1 h5">{item.name}</p>
 
-        {/* Main Content */}
-        <div className="col-md-9 tab-content-wrapper fade-slide">
+                  <p className="mt-2 mb-2 text-success">
+                    {item.availability || "In Stock"}
+                  </p>
 
-          {activeTab === "profile" && (
-            <div>
-              <h4>
-                Profile Information{" "}
-                <button
-                  className="btn btn-link"
-                  onClick={() =>
-                    editProfile ? saveProfile() : setEditProfile(true)
-                  }
-                >
-                  {editProfile ? "Save" : "Edit"}
-                </button>
-              </h4>
-
-              <input
-                className="form-control mb-2"
-                value={user.name}
-                disabled={!editProfile}
-                onChange={(e) =>
-                  setUser({ ...user, name: e.target.value })
-                }
-              />
-
-              <input
-                className="form-control mb-2"
-                value={user.email}
-                disabled
-              />
-
-              <input
-                className="form-control mb-2"
-                value={user.phone}
-                disabled={!editProfile}
-                onChange={(e) =>
-                  setUser({ ...user, phone: e.target.value })
-                }
-              />
-
-              {/* Gender */}
-              <div>
-                <label>
-                  <input
-                    type="radio"
-                    value="male"
-                    checked={user.gender === "male"}
-                    disabled={!editProfile}
-                    onChange={(e) =>
-                      setUser({ ...user, gender: e.target.value })
+                  <button
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() =>
+                      dispatch(removeFromCart(item._id))
                     }
-                  /> Male
-                </label>
-
-                <label className="ms-3">
-                  <input
-                    type="radio"
-                    value="female"
-                    checked={user.gender === "female"}
-                    disabled={!editProfile}
-                    onChange={(e) =>
-                      setUser({ ...user, gender: e.target.value })
-                    }
-                  /> Female
-                </label>
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
 
-              {/* Spinner */}
-              {loadingSave && (
-                <div className="mt-3">
-                  <div className="spinner-border text-primary"></div>
+              {/* ================= QUANTITY SECTION ================= */}
+              <div className="d-flex flex-column align-items-center">
+                <h6 className="mb-2">Quantity</h6>
+
+                <div className="quantity-control d-flex align-items-center gap-2">
+
+                  {/* DECREASE BUTTON */}
+                  <button
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() =>
+                      dispatch(decreaseQuantity(item._id))
+                    }
+                    disabled={item.quantity <= 1}  // ✅ Disable if quantity = 1
+                  >
+                    -
+                  </button>
+
+                  {/* QUANTITY INPUT */}
+                  <input
+                    type="text"
+                    className="form-control form-control-sm text-center"
+                    value={item.quantity}
+                    readOnly
+                    style={{ width: "60px" }}
+                  />
+
+                  {/* INCREASE BUTTON */}
+                  <button
+                    className={`btn btn-sm ${
+                      item.quantity >= item.stock
+                        ? "btn-secondary"
+                        : "btn-outline-secondary"
+                    }`}
+                    onClick={() =>
+                      dispatch(increaseQuantity(item._id)) 
+                    }
+                    disabled={item.quantity >= item.stock} // ✅ Disable when stock reached
+                  >
+                    +
+                  </button>
                 </div>
-              )}
-            </div>
-          )}
 
-          {activeTab === "address" && (
-            <div>
-              <h4>Your Address</h4>
-              <input
-                className="form-control mb-2"
-                value={user.address?.street || ""}
-                disabled
-              />
-            </div>
-          )}
+                {/* STOCK WARNING */}
+                {item.quantity >= item.stock && (
+                  <small className="text-danger mt-2">
+                    Maximum stock reached
+                  </small>
+                )}
+              </div>
 
-          {activeTab === "password" && (
-            <div>
-              <h4>Change Password</h4>
-              <input
-                type="password"
-                className="form-control mb-2"
-                placeholder="Current Password"
-              />
-              <input
-                type="password"
-                className="form-control mb-2"
-                placeholder="New Password"
-              />
-              <button className="btn btn-success">
-                Change Password
-              </button>
+              {/* ================= PRICE SECTION ================= */}
+              <div className="text-center">
+                <h6 className="mb-2">Price</h6>
+                <p className="fw-bold">
+                  ₹
+                  {(item.offerPrice * item.quantity).toFixed(2)}
+                </p>
+              </div>
             </div>
-          )}
+          ))}
 
-        </div>
-      </div>
+          {/* =====================================
+              PRICE DETAILS SECTION
+          ===================================== */}
+          <h5 className="mt-4 mb-3">Price Details</h5>
+
+          <div className="border p-3 rounded price-details">
+            <div className="d-flex justify-content-between">
+              <p>Price ({cartItems.length} items)</p>
+              <p>₹{itemsPrice.toFixed(2)}</p>
+            </div>
+
+            <div className="d-flex justify-content-between">
+              <p>Tax (5%)</p>
+              <p>₹{taxPrice.toFixed(2)}</p>
+            </div>
+
+            <div className="d-flex justify-content-between">
+              <p>Delivery Charges</p>
+              <p>₹{deliveryCharge}</p>
+            </div>
+
+            <div className="d-flex justify-content-between">
+              <p>Platform Fee</p>
+              <p>₹{platformFee}</p>
+            </div>
+
+            <hr />
+
+            <div className="d-flex justify-content-between fw-bold">
+              <p>Total Amount</p>
+              <p>₹{totalPrice.toFixed(2)}</p>
+            </div>
+          </div>
+
+          {/* =====================================
+              CHECKOUT BUTTON
+          ===================================== */}
+          <div className="text-center mt-4">
+            <button className="btn btn-success btn-lg w-50">
+              Checkout
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
-export default MyProfile;
+export default Cart;

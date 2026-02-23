@@ -28,9 +28,12 @@ const Navbar = () => {
   // 🔥 LOGOUT LOADING STATE
   const [logoutLoading, setLogoutLoading] = useState(false);
 
-  const {user, isAuthenticated} = useSelector((state) => state.user);
+  // it is used to get the user information and authentication status from the Redux store, which can be used to conditionally render certain parts of the navbar (like showing the user's name or showing login/signup options).
+  const { user, isAuthenticated } = useSelector((state) => state.user);
 
-// console.log(isAuthenticated);
+  // it is used to get the cart items from the redux store, which can be used to display the number of items in the cart or for other cart-related functionalities.
+  const { cartItems } = useSelector((state) => state.cart);
+  // console.log(isAuthenticated);
 
 
   const logoutHandler = async () => {
@@ -52,7 +55,7 @@ const Navbar = () => {
 
   return (
     <>
-     
+
 
       <nav className="navbar navbar-expand-lg" style={{ "backgroundColor": "var(--voilet)" }}>
         <div className="container-fluid ms-lg-2 me-lg-2">
@@ -138,8 +141,9 @@ const Navbar = () => {
 
               <li className="nav-item d-lg-none border-bottom responsive-border py-2">
                 <Link to="/cart" className="nav-link">
-                  My Cart
+                  My Cart ( {cartItems.length} )
                 </Link>
+          
               </li>
 
               <li className="nav-item text-center d-lg-none border-bottom responsive-border py-2">
@@ -158,7 +162,7 @@ const Navbar = () => {
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  
+
                   {user?.name || "User"}
 
                 </a>
@@ -185,8 +189,12 @@ const Navbar = () => {
                   <li className="d-flex align-items-center justify-content-between ps-2">
                     <img src={cartIcon} alt="Cart" />
                     <Link className="dropdown-item" to="/cart">
-                      My Cart
+                      My Cart 
+                      
+                      ( {cartItems.length} )
+                    
                     </Link>
+                   
                   </li>
 
                   <li><hr className="dropdown-divider" /></li>
@@ -200,9 +208,10 @@ const Navbar = () => {
                 </ul>
               </li>
               {/* Cart & logout icons for desktop */}
-              <li className="nav-item ms-2 d-none d-lg-flex">
-                <Link to="/cart" className="nav-link d-flex align-items-center">
+              <li className="nav-item ms-2 d-none d-lg-flex align-items-center">
+                <Link to="/cart" className="nav-link p-0 cart-icon-wrapper">
                   <img src={shoppingCart} alt="Cart" style={{ width: "2.5rem" }} />
+                  <span className="cart-count">{cartItems.length}</span>
                 </Link>
               </li>
 

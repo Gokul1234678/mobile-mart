@@ -18,6 +18,10 @@ html {
     --black: #000000;
     --darkwhite: #f8f8f8;
     --red: #ee1515;
+    --orange: #ff5722;
+    --violet: #6a0dad;
+    --orange-light: #fff3ef;
+    --violet-light: #f3e8ff;
 }
 
 * {

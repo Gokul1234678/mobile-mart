@@ -10,7 +10,7 @@ import Register from "./pages/Register";
 import MyProfile from "./pages/MyProfile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-
+import Cart from "./pages/Cart";
 
 
 
@@ -75,6 +75,7 @@ function App() {
          
           <Route path="/reset-password/:token" element={<ResetPassword />} />
        
+          <Route path="/cart" element={<Cart />} />
        
         </Routes>
       </BrowserRouter>

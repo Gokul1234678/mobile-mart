@@ -11,7 +11,8 @@ import MyProfile from "./pages/MyProfile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Cart from "./pages/Cart";
-
+import Checkout from "./pages/Checkout";
+import OrderSuccess from "./pages/OrderSuccess";
 
 
 // TOASTIFY for notifications
@@ -30,6 +31,7 @@ function App() {
   // Used to dispatch Redux actions(functions)
   const dispatch = useDispatch();
 
+  // On app load, check if user is already logged in (e.g. has valid token)
   useEffect(() => {
     // console.log("app render...");
     dispatch(loadUser());
@@ -76,6 +78,10 @@ function App() {
           <Route path="/reset-password/:token" element={<ResetPassword />} />
        
           <Route path="/cart" element={<Cart />} />
+
+          <Route path="/checkout" element={<Checkout />} />
+
+          <Route path="/order-success/:id" element={<OrderSuccess />} />
        
         </Routes>
       </BrowserRouter>

@@ -8,6 +8,8 @@ import {
 import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
 
+  import { useNavigate } from "react-router-dom";
+
 import "../assets/styles/cart.css";
 
 
@@ -30,6 +32,23 @@ const Cart = () => {
   const platformFee = itemsPrice > 0 ? 5 : 0;
   const totalPrice = itemsPrice + taxPrice + deliveryCharge + platformFee;
 
+
+  const navigate = useNavigate();
+
+  const { isAuthenticated } = useSelector((state) => state.user);
+
+  const checkoutHandler = () => {
+    if (cartItems.length === 0) {
+      alert("Your cart is empty");
+      return;
+    }
+
+    if (!isAuthenticated) {
+      navigate("/login");
+    } else {
+      navigate("/checkout");
+    }
+  };
   return (
     <>
       {/* <style>{styles}</style> */}
@@ -98,7 +117,7 @@ const Cart = () => {
 
                         {/* Price */}
                         <span className="item-price">
-                         ₹ {(item.offerPrice * item.quantity).toFixed(2)}
+                          ₹ {(item.offerPrice * item.quantity).toFixed(2)}
                         </span>
 
                         {/* Remove */}
@@ -107,11 +126,11 @@ const Cart = () => {
                           onClick={() => dispatch(removeFromCart(item._id))}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                            <path d="M10 11v6"/>
-                            <path d="M14 11v6"/>
-                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                            <path d="M10 11v6" />
+                            <path d="M14 11v6" />
+                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                           </svg>
                           Remove
                         </button>
@@ -162,7 +181,9 @@ const Cart = () => {
                     </div>
                   )}
 
-                  <button className="checkout-btn">Proceed to Checkout</button>
+                    {/* Checkout botton  */}
+                  <button className="checkout-btn" onClick={checkoutHandler}>Proceed to Checkout</button>
+
                   <p className="secure-note">🔒 Secure & encrypted checkout</p>
                 </div>
               </div>

@@ -1889,7 +1889,7 @@ app.delete("/api/admin/products/:productId/reviews/:reviewId", isAuthenticatedUs
 
 
 
-// orderSchema starts
+// OrderSchema starts
 
 const orderSchema = new mongoose.Schema({
 
@@ -1915,7 +1915,7 @@ const orderSchema = new mongoose.Schema({
       // ------------------------------------------------------------
       // 🔗 PRODUCT REFERENCE (Which product is ordered)
       // ------------------------------------------------------------
-      product: {
+      product: {// we get this product id from frontend when user adds product to cart and then place order, we store that product id in orderItems array of order document and that product id is nothing but the _id:Object(6943a635df0aec0e290fe9a3) of that product document in products collection
         type: mongoose.Schema.Types.ObjectId,
         // → Stores only the MongoDB ObjectId of a product document
 
@@ -1966,6 +1966,31 @@ const orderSchema = new mongoose.Schema({
     }
   },
 
+  // 💰 Price Breakdown
+  itemsPrice: {
+    type: Number,
+    required: true
+  },
+  taxPrice: {
+    type: Number,
+    required: true
+  },
+  deliveryCharge: {
+    type: Number,
+    required: true
+  },
+  platformFee: {
+    type: Number,
+    required: true
+  },
+
+  // 💳 Payment method (COD(cash on delivery) or ONLINE(like card,upi))
+  paymentMethod: {
+    type: String,
+    required: true,
+    enum: ["COD", "ONLINE"]
+  },
+
   // 💰 Total price
   totalPrice: {
     type: Number,
@@ -2001,7 +2026,14 @@ app.post("/api/orders", isAuthenticatedUser, async (req, res) => {
     // ------------------------------------------------------------
     // 📥 1️⃣ Extract order details from request body
     // ------------------------------------------------------------
-    const { orderItems, shippingAddress, totalPrice } = req.body;
+    const {
+      orderItems, shippingAddress, itemsPrice, taxPrice,
+      deliveryCharge,
+      platformFee,
+      totalPrice,
+      paymentMethod
+    } = req.body;
+
 
     // ------------------------------------------------------------
     // ❌ 2️⃣ Validate order items
@@ -2042,8 +2074,19 @@ app.post("/api/orders", isAuthenticatedUser, async (req, res) => {
       });
     }
 
+
     // ------------------------------------------------------------
-    // 📦 5️⃣ Check product stock & update quantity
+    // ❌ 5️⃣ Validate payment method
+    // ------------------------------------------------------------
+    if (!paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment method is required"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 📦 6 Check product stock & update quantity
     // ------------------------------------------------------------
     // → Loop through each ordered item
     for (let item of orderItems) {
@@ -2080,17 +2123,23 @@ app.post("/api/orders", isAuthenticatedUser, async (req, res) => {
     }
 
     // ------------------------------------------------------------
-    // 🧾 6️⃣ Create order document in database
+    // 🧾 7 Create order document in database
     // ------------------------------------------------------------
     const order = await orderModel.create({
-      user: req.user._id,        // logged-in user ID
-      orderItems,                // ordered products
-      shippingAddress,           // delivery address
-      totalPrice                 // total order amount
+      user: req.user._id, //logged-in user ID from auth middleware
+      orderItems, // array of ordered items with product ID, name, price, quantity
+      shippingAddress,
+      itemsPrice,
+      taxPrice,
+      deliveryCharge,
+      platformFee,
+      totalPrice,
+      paymentMethod, //"COD" or "ONLINE"
+      paymentStatus: paymentMethod === "COD" ? "pending" : "pending" 
     });
 
     // ------------------------------------------------------------
-    // ✅ 7️⃣ Send success response
+    // ✅ 8 Send success response
     // ------------------------------------------------------------
     res.status(201).json({
       success: true,
@@ -2100,7 +2149,7 @@ app.post("/api/orders", isAuthenticatedUser, async (req, res) => {
 
   } catch (error) {
     // ------------------------------------------------------------
-    // ❌ 8️⃣ Handle server errors
+    // ❌ 9️⃣ Handle server errors
     // ------------------------------------------------------------
     res.status(500).json({
       success: false,

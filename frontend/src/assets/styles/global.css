@@ -8,27 +8,43 @@
 
 /* Make rem units consistent even if browser zoom or base font size changes */
 html {
-  font-size: 14px; /* Or 15px, smaller base font */
+  font-size: 14px;
+  /* Or 15px, smaller base font */
 }
 
 :root {
-    --voilet: #5e17eb;
-    --green: #13a82b;
-    --white: #ffffff;
-    --black: #000000;
-    --darkwhite: #f8f8f8;
-    --red: #ee1515;
-    --orange: #ff5722;
-    --violet: #6a0dad;
-    --orange-light: #fff3ef;
-    --violet-light: #f3e8ff;
+  --voilet: #5e17eb;
+  --green: #13a82b;
+  --white: #ffffff;
+  --black: #000000;
+  --darkwhite: #f8f8f8;
+  --red: #ee1515;
+  --orange: #ff5722;
+  --violet: #6a0dad;
+  --orange-light: #fff3ef;
+  --violet-light: #f3e8ff;
+
+  --orange-hover: #e64a19;
+  --green-light: #e8f5e9;
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --text-muted: #999999;
+  --border: #eeeeee;
+  --card-bg: #ffffff;
+  --page-bg: #f8f8f8;
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.1);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --transition: 0.2s ease;
 }
 
 * {
-    padding: 0;
-    margin: 0;
+  padding: 0;
+  margin: 0;
 
 }
+
 /* ======== GLOBAL CONTAINER STYLES ======== */
 
 .container {
@@ -39,7 +55,8 @@ html {
 .holder {
   width: 1800px;
   margin: 0 auto;
-  max-width: 100%; /* ✅ prevents overflow on smaller screens */
+  max-width: 100%;
+  /* ✅ prevents overflow on smaller screens */
 }
 
 /* Optional: Responsive width adjustments */
@@ -51,8 +68,8 @@ html {
 
 body {
 
-    font-family: "Inter", "Arial", "Helvetica", sans-serif !important;
-    font-optical-sizing: auto;
-    /* font-weight: 400; */
-    font-style: normal;
+  font-family: "Inter", "Arial", "Helvetica", sans-serif !important;
+  font-optical-sizing: auto;
+  /* font-weight: 400; */
+  font-style: normal;
 }

@@ -146,9 +146,8 @@ const Checkout = () => {
   return (
     <>
 
-      {/* ======================================
-   Checkout Navbar (Logo Only)
-====================================== */}
+  
+      {/*  Checkout Navbar (Logo Only) */}
       <div className="checkout-navbar">
         <img
           src={logo}
@@ -157,6 +156,8 @@ const Checkout = () => {
           onClick={() => navigate("/")}
         />
       </div>
+
+      {/* checkout container */}
       <div className="checkout-container">
         <h2 className="checkout-title">Checkout</h2>
 
@@ -275,7 +276,7 @@ const Checkout = () => {
                   className="back-cart-btn"
                   onClick={() => navigate("/cart")}
                 >
-                  Back to Cart
+                  Cancel Order
                 </button>
 
                 <button

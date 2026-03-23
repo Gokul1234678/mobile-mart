@@ -134,7 +134,7 @@ const Navbar = () => {
               </li>
 
               <li className="nav-item d-lg-none border-bottom responsive-border py-2">
-                <Link to="/my-orders" className="nav-link">
+                <Link to="/orders" className="nav-link">
                   My Orders
                 </Link>
               </li>
@@ -179,7 +179,7 @@ const Navbar = () => {
 
                   <li className="d-flex align-items-center justify-content-between ps-2">
                     <img src={parcelIcon} alt="Orders" />
-                    <Link className="dropdown-item" to="/my-orders">
+                    <Link className="dropdown-item" to="/orders">
                       My Orders
                     </Link>
                   </li>

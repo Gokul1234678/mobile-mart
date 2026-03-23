@@ -13,6 +13,10 @@ import ResetPassword from "./pages/ResetPassword";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
+import Orders from "./pages/Orders";
+import OrderDetails from "./pages/Orderdetails";
+
+
 
 
 // TOASTIFY for notifications
@@ -83,6 +87,10 @@ function App() {
 
           <Route path="/order-success/:id" element={<OrderSuccess />} />
        
+          {/* Orders page */}
+          <Route path="/orders" element={<Orders />} />
+
+          <Route path="/orders/:id" element={<OrderDetails />} />
         </Routes>
       </BrowserRouter>
     </>

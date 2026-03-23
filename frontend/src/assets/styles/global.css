@@ -37,6 +37,49 @@ html {
   --radius: 14px;
   --radius-sm: 8px;
   --transition: 0.2s ease;
+--green: #2e7d32;
+--green-light: #e8f5e9;
+--green-mid: #4caf50;
+
+  /* --orange: #ff5722;
+--orange-light: #fff3ef;
+--orange-hover: #e64a19;
+
+--violet: #6a0dad;
+--violet-light: #f3e8ff;
+
+--green: #2e7d32;
+--green-light: #e8f5e9;
+--green-mid: #4caf50;
+
+--red: #e53935;
+--red-light: #fff5f5;
+
+--yellow: #f59e0b;
+--yellow-light: #fffbeb;
+
+--blue: #1565c0;
+--blue-light: #e3f2fd;
+
+--text-primary: #111111;
+--text-secondary: #555555;
+--text-muted: #999999;
+
+--page-bg: #f8f8f8;
+--card-bg: #ffffff;
+--border: #eeeeee;
+
+--white: #ffffff;
+--black: #000000;
+--darkwhite: #f8f8f8;
+
+--radius: 14px;
+--radius-sm: 8px;
+
+--shadow-sm: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+--shadow-md: 0 6px 24px rgba(0,0,0,0.1);
+
+--transition: 0.2s ease; */
 }
 
 * {

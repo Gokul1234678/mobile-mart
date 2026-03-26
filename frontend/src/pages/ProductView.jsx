@@ -23,6 +23,9 @@ import { addToCart } from "../redux/cartSlice";
 import "../assets/styles/productView.css";
 import VideoLoader from "../components/VideoLoader";
 
+
+import ProductReviews from "../components/ProductReviews";
+
 const ProductView = () => {
   const { id } = useParams(); // productId from URL
 
@@ -30,7 +33,7 @@ const ProductView = () => {
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
 
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
 
   useEffect(() => {
@@ -58,14 +61,14 @@ const dispatch = useDispatch();
     if (qty > 1) setQty(qty - 1);
   };
 
-  if (loading) return <VideoLoader loaderName="loading" fullscreen  />;
+  if (loading) return <VideoLoader loaderName="loading" fullscreen />;
 
   if (!product) return <p className="text-center h2">Product not found</p>;
 
   // this is for preventing scroll when loader is active
-//   useEffect(() => {
-//   document.body.style.overflow = loading ? "hidden" : "auto";
-// }, [loading]);
+  //   useEffect(() => {
+  //   document.body.style.overflow = loading ? "hidden" : "auto";
+  // }, [loading]);
 
   return (
     <>
@@ -89,7 +92,7 @@ const dispatch = useDispatch();
 
       <Navbar />
 
-    
+
       <div className="container py-5 cus-font product-view-container">
         <div className="row">
           {/* IMAGE CAROUSEL */}
@@ -193,11 +196,11 @@ const dispatch = useDispatch();
               <button
                 className="btn-add-to-cart"
                 disabled={product.quantity === 0}
-                onClick={()=>dispatch(addToCart({
-                      ...product,
-                      quantity: qty,   // 🔥 THIS IS IMPORTANT
-                      stock: product.quantity   // 🔥 SAVE STOCK
-                    }))}
+                onClick={() => dispatch(addToCart({
+                  ...product,
+                  quantity: qty,   // 🔥 THIS IS IMPORTANT
+                  stock: product.quantity   // 🔥 SAVE STOCK
+                }))}
               >
                 <i className="bi bi-cart me-1"></i> Add to Cart
               </button>
@@ -241,6 +244,8 @@ const dispatch = useDispatch();
             </div>
           </div>
         </div>
+        <ProductReviews productId={product._id} />
+
       </div>
     </>
   );

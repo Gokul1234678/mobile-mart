@@ -1,143 +1,168 @@
-// ==========================================
-// 📦 USER ORDERS PAGE
-// ==========================================
-
-// React hooks
 import { useEffect, useState } from "react";
-
-// Axios instance for API calls
 import axiosInstance from "../axios_instance";
-
-// Toast for notifications
 import { toast } from "react-toastify";
 
-// Navigation
-import { useNavigate } from "react-router-dom";
+// ⭐ Star display component
+const Stars = ({ rating }) => {
+  return (
+    <div>
+      {[1,2,3,4,5].map((i) => (
+        <span key={i} style={{ color: i <= rating ? "gold" : "#ccc" }}>
+          ★
+        </span>
+      ))}
+    </div>
+  );
+};
 
-// Optional: Loader component (your dynamic loader)
-// import Loader from "../components/Loader";
+const ProductReviews = ({ productId }) => {
 
-const Orders = () => {
+  // ==========================================
+  // STATE
+  // ==========================================
+  const [reviews, setReviews] = useState([]);
+  const [avgRating, setAvgRating] = useState(0);
+  const [count, setCount] = useState(0);
 
-  // ------------------------------------------
-  // 🧠 STATE MANAGEMENT
-  // ------------------------------------------
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
 
-  // Store orders from backend
-  const [orders, setOrders] = useState([]);
-
-  // Loading state
   const [loading, setLoading] = useState(true);
 
-  // Navigation
-  const navigate = useNavigate();
 
-  // ------------------------------------------
-  // 📡 FETCH USER ORDERS
-  // ------------------------------------------
-  const fetchOrders = async () => {
+  // ==========================================
+  // FETCH REVIEWS
+  // ==========================================
+  const fetchReviews = async () => {
     try {
-
-      // Call backend API
       const { data } = await axiosInstance.get(
-        "/api/orders/my",
-        { withCredentials: true }
+        `/api/products/${productId}/reviews`
       );
 
-      // Store orders in state
-      setOrders(data.orders);
+      setReviews(data.reviews);
+      setAvgRating(data.averageRating);
+      setCount(data.numOfReviews);
 
-    } catch (error) {
-
-      // Show error message
-      toast.error(
-        error.response?.data?.message || "Failed to load orders"
-      );
-
+    } catch (err) {
+      toast.error("Failed to load reviews");
     } finally {
-
-      // Stop loader
       setLoading(false);
     }
   };
 
-  // ------------------------------------------
-  // 🔁 RUN ON PAGE LOAD
-  // ------------------------------------------
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchReviews();
+  }, [productId]);
 
-  // ------------------------------------------
-  // 🎨 UI RENDER
-  // ------------------------------------------
+
+  // ==========================================
+  // SUBMIT REVIEW
+  // ==========================================
+  const submitReviewHandler = async () => {
+
+    if (!rating || !comment) {
+      toast.error("Please add rating and comment");
+      return;
+    }
+
+    try {
+      const { data } = await axiosInstance.put(
+        `/api/products/${productId}/review`,
+        { rating, comment },
+        { withCredentials: true }
+      );
+
+      toast.success(data.message);
+
+      // reset form
+      setRating(0);
+      setComment("");
+
+      // refresh reviews
+      fetchReviews();
+
+    } catch (err) {
+      toast.error(err.response?.data?.message);
+    }
+  };
+
+
+  // ==========================================
+  // UI
+  // ==========================================
   return (
-    <div className="container py-4">
+    <div className="mt-4">
 
-      {/* 🔄 LOADER */}
-      {/* {loading && <Loader type="loading" fullscreen />} */}
-      {loading && <h1>Loading...</h1>}
+      {/* HEADER */}
+      <h4>Customer Reviews</h4>
 
-      {/* 🧾 PAGE TITLE */}
-      <h2 className="fw-bold mb-4">My Orders</h2>
+      {/* AVG RATING */}
+      <div className="mb-3">
+        <Stars rating={Math.round(avgRating)} />
+        <p>{avgRating.toFixed(1)} out of 5 ({count} reviews)</p>
+      </div>
 
-      {/* ❌ NO ORDERS */}
-      {!loading && orders.length === 0 && (
-        <p>No orders found</p>
-      )}
 
-      {/* 📦 ORDER LIST */}
-      {!loading && orders.map((order) => (
+      {/* SUBMIT REVIEW */}
+      <div className="card p-3 mb-3">
+        <h5>Write a Review</h5>
 
-        <div
-          key={order._id}
-          className="card mb-3 p-3 shadow-sm"
-          style={{ cursor: "pointer" }}
-          onClick={() => navigate(`/orders/${order._id}`)}
-        >
-
-          {/* 🧾 ORDER HEADER */}
-          <div className="d-flex justify-content-between">
-
-            {/* 🆔 ORDER ID */}
-            <p className="mb-1 fw-bold">
-              Order ID: {order._id}
-            </p>
-
-            {/* 📦 STATUS */}
+        {/* Rating */}
+        <div className="mb-2">
+          {[1,2,3,4,5].map((i) => (
             <span
-              className={`badge ${
-                order.orderStatus === "Delivered"
-                  ? "bg-success"
-                  : order.orderStatus === "Cancelled"
-                  ? "bg-danger"
-                  : "bg-warning text-dark"
-              }`}
+              key={i}
+              style={{
+                cursor: "pointer",
+                fontSize: "20px",
+                color: i <= rating ? "gold" : "#ccc"
+              }}
+              onClick={() => setRating(i)}
             >
-              {order.orderStatus || "Processing"}
+              ★
             </span>
-          </div>
-
-          {/* 📅 DATE */}
-          <p className="text-muted mb-1">
-            {new Date(order.createdAt).toLocaleString()}
-          </p>
-
-          {/* 💰 PRICE */}
-          <p className="fw-bold text-success mb-1">
-            ₹{order.totalPrice}
-          </p>
-
-          {/* 📦 ITEMS COUNT */}
-          <p className="mb-0">
-            {order.orderItems.length} item(s)
-          </p>
-
+          ))}
         </div>
-      ))}
+
+        {/* Comment */}
+        <textarea
+          className="form-control mb-2"
+          placeholder="Write your review..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+
+        <button
+          className="btn btn-success"
+          onClick={submitReviewHandler}
+        >
+          Submit Review
+        </button>
+      </div>
+
+
+      {/* REVIEWS LIST */}
+      {loading ? (
+        <p>Loading reviews...</p>
+      ) : reviews.length === 0 ? (
+        <p>No reviews yet</p>
+      ) : (
+        reviews.map((rev) => (
+          <div key={rev._id} className="card p-3 mb-2">
+
+            <div className="d-flex justify-content-between">
+              <strong>{rev.name}</strong>
+              <Stars rating={rev.rating} />
+            </div>
+
+            <p className="mb-0">{rev.comment}</p>
+
+          </div>
+        ))
+      )}
 
     </div>
   );
 };
 
-export default Orders;
+// export default ProductReviews;

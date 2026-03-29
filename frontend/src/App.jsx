@@ -16,7 +16,13 @@ import OrderSuccess from "./pages/OrderSuccess";
 import Orders from "./pages/Orders";
 import OrderDetails from "./pages/Orderdetails";
 
-
+// ADMIN PAGES
+import AdminLayout from "./admin/AdminLayout";
+import AdminRoute from "./admin/AdminRoute";
+import Dashboard from "./pages/admin/Dashboard";
+import Products from "./pages/admin/Products";
+import AdminOrders from "./pages/admin/Orders";
+import Users from "./pages/admin/Users";
 
 
 // TOASTIFY for notifications
@@ -78,19 +84,35 @@ function App() {
           />
 
           <Route path="/forgot-password" element={<ForgotPassword />} />
-         
+
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-       
+
           <Route path="/cart" element={<Cart />} />
 
           <Route path="/checkout" element={<Checkout />} />
 
           <Route path="/order-success/:id" element={<OrderSuccess />} />
-       
+
           {/* Orders page */}
           <Route path="/orders" element={<Orders />} />
 
           <Route path="/orders/:id" element={<OrderDetails />} />
+
+
+          {/* admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="products" element={<Products />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="users" element={<Users />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </>

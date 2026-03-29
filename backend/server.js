@@ -595,7 +595,9 @@ app.post("/api/login", async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role:user.role
+    
       }
     })
   } catch (err) {
@@ -1104,7 +1106,7 @@ let productModel = mongoose.model("productsList", productSchema)
 
 // ✅ Get all products
 // app.get("/api/products", isAuthenticatedUser,async (req, res) => {
-app.get("/api/products", async (req, res) => {
+app.get("/api/products",isAuthenticatedUser, async (req, res) => {
   try {
     const products = await productModel.find();
 
@@ -1125,7 +1127,7 @@ app.get("/api/products", async (req, res) => {
 
 // ✅ Get single product by its ID
 // app.get("/api/product/:id", isAuthenticatedUser, async (req, res) => {
-app.get("/api/product/:id", async (req, res) => {
+app.get("/api/product/:id",  isAuthenticatedUser,async (req, res) => {
   try {
     // ------------------------------------------------------------
     // 1️⃣ Validate MongoDB ObjectId
@@ -2575,6 +2577,49 @@ app.delete("/api/admin/orders/:id", isAuthenticatedUser, isAdmin, async (req, re
   }
 });
 
+
+// Admin Routes 
+// ✅ dashboard stats for admin API 
+app.get("/api/admin/dashboard",isAuthenticatedUser, isAdmin, async (req, res) => {
+  // what this api does?
+  // it calculates and returns important statistics for the admin dashboard, such as total number of products, total orders, total users, total revenue generated from orders, and count of out-of-stock products. This helps the admin to get a quick overview of the business performance and inventory status.
+  try {
+
+    // 📊 Get counts for Totalproducts, Totalorders, Totalusers
+    const totalProducts = await productModel.countDocuments();
+    
+    const totalOrders = await orderModel.countDocuments();
+
+    const totalUsers = await userModel.countDocuments();
+
+    // 💰 Calculate total revenue
+    const orders = await orderModel.find();
+    const totalRevenue = orders.reduce(
+      (acc, order) => acc + order.totalPrice,
+      0
+    );
+
+    // ❌ Out of stock products
+    const outOfStock = await productModel.countDocuments({
+      quantity: 0
+    });
+
+    res.status(200).json({
+      success: true,
+      totalProducts,
+      totalOrders,
+      totalUsers,
+      totalRevenue,
+      outOfStock
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
 
 
 // API route to create a Razorpay order

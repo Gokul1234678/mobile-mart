@@ -109,6 +109,22 @@ const Navbar = () => {
 
               {/* Main navigation links */}
               <li className="nav-item me-3 border-bottom responsive-border py-2 products">
+
+                {/* only visible admin  */}
+                {user?.role === "admin" && (
+
+                  <Link to="/admin" >
+                    <a className="nav-link text-white" style={{
+                      textDecoration: 'none', // Removes the underline
+                      color: 'inherit' // Inherits color from parent, or set a specific color like 'black'
+                    }} >
+                      Admin Panel
+                    </a>
+
+                  </Link>
+                )}
+              </li>
+              <li className="nav-item me-3 border-bottom responsive-border py-2 products">
                 <a href="#products" className="nav-link text-white">
                   Products
                 </a>
@@ -143,7 +159,7 @@ const Navbar = () => {
                 <Link to="/cart" className="nav-link">
                   My Cart ( {cartItems.length} )
                 </Link>
-          
+
               </li>
 
               <li className="nav-item text-center d-lg-none border-bottom responsive-border py-2">
@@ -189,12 +205,12 @@ const Navbar = () => {
                   <li className="d-flex align-items-center justify-content-between ps-2">
                     <img src={cartIcon} alt="Cart" />
                     <Link className="dropdown-item" to="/cart">
-                      My Cart 
-                      
+                      My Cart
+
                       ( {cartItems.length} )
-                    
+
                     </Link>
-                   
+
                   </li>
 
                   <li><hr className="dropdown-divider" /></li>

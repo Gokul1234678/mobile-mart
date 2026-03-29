@@ -8,10 +8,12 @@ import Footer from "../components/Footer";
 
 import "../assets/styles/Home.css"
 
+
 // This component helps us set page title and meta description dynamically
 import SEO from "../components/SEO";
 
 export default function Home() {
+
   return (
 
 

@@ -7,6 +7,10 @@ const bcrypt = require("bcrypt");//Password encryption (bcrypt)
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 
+// Import upload middleware (Cloudinary + multer) 
+const upload = require("./middleware/upload");
+
+
 // Import Node's built-in crypto module (NO need to install)
 const crypto = require("crypto");
 
@@ -596,8 +600,8 @@ app.post("/api/login", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role:user.role
-    
+        role: user.role
+
       }
     })
   } catch (err) {
@@ -1030,9 +1034,39 @@ const productSchema = new mongoose.Schema({
   },
   availability: {
     type: String,
-    default: function () {
+    default: function () {// ⭐ This is a dynamic default value based on quantity when this function runs, it checks the quantity and sets availability accordingly.
       return this.quantity > 0 ? "In Stock" : "Out of Stock";
     }
+    //{ ==========================================
+    // 📌 MONGOOSE DEFAULT FUNCTION — IMPORTANT NOTES
+    // ==========================================
+
+    // 1. Default function runs ONLY when document is CREATED
+    //    - It executes during Product.create()
+    //    - It does NOT run during update operations
+
+    // 2. Default function will NOT run on UPDATE
+    //    Example:
+    //    product.quantity = 0;
+    //    await product.save();
+    //    ❌ availability will NOT auto update
+
+    // 3. If you provide value manually, default will NOT run
+    //    Example:
+    //    availability: "Out of Stock"
+    //    👉 Mongoose will use this value directly
+    //    👉 default function is ignored
+
+    // 4. IMPORTANT RULE:
+    //    👉 Default runs ONLY when field is NOT provided
+
+    // ==========================================
+    // ⚠️ LIMITATION
+    // ==========================================
+
+    // - Default is a ONE-TIME execution (on creation only)
+    // - It does NOT keep values in sync after updates}
+
   }
   ,
   specifications: {
@@ -1106,7 +1140,7 @@ let productModel = mongoose.model("productsList", productSchema)
 
 // ✅ Get all products
 // app.get("/api/products", isAuthenticatedUser,async (req, res) => {
-app.get("/api/products",isAuthenticatedUser, async (req, res) => {
+app.get("/api/products", isAuthenticatedUser, async (req, res) => {
   try {
     const products = await productModel.find();
 
@@ -1127,7 +1161,7 @@ app.get("/api/products",isAuthenticatedUser, async (req, res) => {
 
 // ✅ Get single product by its ID
 // app.get("/api/product/:id", isAuthenticatedUser, async (req, res) => {
-app.get("/api/product/:id",  isAuthenticatedUser,async (req, res) => {
+app.get("/api/product/:id", isAuthenticatedUser, async (req, res) => {
   try {
     // ------------------------------------------------------------
     // 1️⃣ Validate MongoDB ObjectId
@@ -1177,26 +1211,144 @@ app.get("/api/product/:id",  isAuthenticatedUser,async (req, res) => {
 });
 
 
-// ✅🆕 Add a new single product(🔐 ADMIN ONLY)
+// Add a new single product(🔐 ADMIN ONLY) old code(not image upload code)
 //                                                👇🛡️ Middleware → allow only admins 
-app.post("/api/product", isAuthenticatedUser, isAdmin, async (req, res) => {
-  //                     🔐 ☝️ (Middleware → ensures user is logged in
-  try {
-    const product = await productModel.create(req.body);
+// app.post("/api/product", isAuthenticatedUser, isAdmin, async (req, res) => {
+//   //                     🔐 ☝️ (Middleware → ensures user is logged in
+//   try {
+//     const product = await productModel.create(req.body);
 
-    return res.status(201).json({
-      success: true,
-      message: "Product added successfully",
-      product
-    });
+//     return res.status(201).json({
+//       success: true,
+//       message: "Product added successfully",
+//       product
+//     });
 
-  } catch (err) {
-    return res.status(400).json({
-      success: false,
-      message: err.message
-    });
+//   } catch (err) {
+//     return res.status(400).json({
+//       success: false,
+//       message: err.message
+//     });
+//   }
+// });
+
+// ==========================================
+// ✅🆕 ADD New Single PRODUCT (ADMIN ONLY + IMAGES)
+// ==========================================
+app.post("/api/product",
+  isAuthenticatedUser, // 🔐 user must be logged in
+  isAdmin,             // 🔐 only admin can add product
+  upload.array("images", 5),// Upload multiple images (max 5)
+  async (req, res) => {
+    // what is api does?
+    // 1. Checks if the user is logged in and is an admin
+    // 2. Accepts product details from the frontend
+    // 3. Uploads product images to Cloudinary
+    // 4. Converts specifications from string to object
+    // 5. Validates required fields
+    // 6. Saves product data (including image URLs) in database
+    // 7. Sends success response after product is created
+    try {
+
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Please upload at least one image"
+        });
+      }
+      // ==========================================
+      // 🖼 GET IMAGE URLs FROM CLOUDINARY
+      // ==========================================
+      // req.files contains uploaded images info
+      // file.path = Cloudinary URL
+      const imageUrls = req.files.map(file => file.path);
+
+
+
+      // ==========================================
+      // 🧠 HANDLE SPECIFICATIONS (FORM-DATA → JSON)
+      // ==========================================
+
+      // Create an empty object to store specifications
+      // (default = empty if user doesn't send anything)
+      let specifications = {};
+
+      // Check if frontend sent specifications field
+      // In form-data, it comes as a STRING (not object)
+      if (req.body.specifications) {
+
+        try {
+          // Convert string → actual JavaScript object
+          // Example:
+          // '{"Display":"6.8 inch"}' → { Display: "6.8 inch" }
+          specifications = JSON.parse(req.body.specifications);
+
+        } catch (err) {
+
+          // ❌ If JSON format is wrong (invalid string)
+          // Example:
+          // '{Display: 6.8 inch}' ❌ (invalid JSON)
+          return res.status(400).json({
+            success: false,
+            message: "Invalid specifications format"
+          });
+        }
+      }
+      // ==========================================
+      // 📥 EXTRACT DATA FROM BODY
+      // ==========================================
+      const {
+        name, brand, description, offerPrice,
+        originalPrice, quantity } = req.body;
+
+      // console.log(req.body);
+      // ==========================================
+      // ❌ VALIDATION
+      // ==========================================
+      if (!name || !brand || !originalPrice || !offerPrice || !quantity || !description) {
+        return res.status(400).json({
+          success: false,
+          message: "Please fill all required fields"
+        });
+      }
+
+      // ==========================================
+      // 🧾 CREATE PRODUCT IN DATABASE
+      // ==========================================
+      const product = await productModel.create({
+        name,
+        brand,
+        description,
+        offerPrice,
+        originalPrice,
+        quantity,
+        specifications, // ✅ parsed JSON
+        images: imageUrls // ✅ array of image URLs from Cloudinary
+      });
+
+
+      // ==========================================
+      // ✅ SUCCESS RESPONSE
+      // ==========================================
+      return res.status(201).json({
+        success: true,
+        message: "Product added successfully",
+        product
+      });
+
+    } catch (err) {
+
+      // ==========================================
+      // ❌ ERROR HANDLING
+      // ==========================================
+      return res.status(500).json({
+        success: false,
+        message: err.message
+      });
+    }
   }
-});
+);
+
 
 // ✅🆕 🧩 Add multiple products at once(🔐 ADMIN ONLY)
 //                                                        👇🛡️ Middleware → allow only admins 
@@ -2171,6 +2323,9 @@ app.post("/api/orders", isAuthenticatedUser, async (req, res) => {
 );
 
 
+
+
+
 // ✅ Get My Orders (Logged-in User)
 app.get("/api/orders/my", isAuthenticatedUser, async (req, res) => {
   try {
@@ -2580,14 +2735,14 @@ app.delete("/api/admin/orders/:id", isAuthenticatedUser, isAdmin, async (req, re
 
 // Admin Routes 
 // ✅ dashboard stats for admin API 
-app.get("/api/admin/dashboard",isAuthenticatedUser, isAdmin, async (req, res) => {
+app.get("/api/admin/dashboard", isAuthenticatedUser, isAdmin, async (req, res) => {
   // what this api does?
   // it calculates and returns important statistics for the admin dashboard, such as total number of products, total orders, total users, total revenue generated from orders, and count of out-of-stock products. This helps the admin to get a quick overview of the business performance and inventory status.
   try {
 
     // 📊 Get counts for Totalproducts, Totalorders, Totalusers
     const totalProducts = await productModel.countDocuments();
-    
+
     const totalOrders = await orderModel.countDocuments();
 
     const totalUsers = await userModel.countDocuments();
@@ -2680,7 +2835,7 @@ app.post("/api/payment/create-order", isAuthenticatedUser, async (req, res) => {
 
 // API to verify Razorpay payment after successful transaction
 app.post("/api/payment/verify-payment", isAuthenticatedUser, async (req, res) => {
-  
+
   //{what this API does
   //   Purpose:
   //     - Verify payment is real (security)
@@ -2756,6 +2911,34 @@ app.post("/api/payment/verify-payment", isAuthenticatedUser, async (req, res) =>
 
 });
 
+
+
+// ==========================================
+// TEST ROUTE: UPLOAD IMAGES
+// ==========================================
+// app.post("/api/upload-test",
+//   // upload multiple images (max 5)
+//   upload.array("images", 5),
+//   async (req, res) => {
+//     try {
+//       // req.files contains uploaded files info
+//       // each file has path (Cloudinary URL)
+// // console.log("hii")
+//       const imageUrls = req.files.map(file => file.path);
+
+//       res.status(200).json({
+//         success: true,
+//         images: imageUrls
+//       });
+
+//     } catch (error) {
+//       res.status(500).json({
+//         success: false,
+//         message: error.message
+//       });
+//     }
+//   }
+// );
 
 // --- Server Start ---
 const PORT = process.env.PORT || 8000;

@@ -1,38 +1,92 @@
-app.get("/api/admin/dashboard", async (req, res) => {
-  try {
+// Import upload middleware (Cloudinary + multer)
+const upload = require("../middleware/upload");
 
-    // 📊 Get counts for Totalproducts, Totalorders, Totalusers
-    const totalProducts = await productModel.countDocuments();
-    
-    const totalOrders = await orderModel.countDocuments();
+// ==========================================
+// ✅🆕 ADD PRODUCT (ADMIN ONLY + IMAGES)
+// ==========================================
+app.post(
+  "/api/product",
 
-    const totalUsers = await userModel.countDocuments();
+  isAuthenticatedUser, // 🔐 user must be logged in
+  isAdmin,             // 🔐 only admin can add product
+  upload.array("images", 5),// Upload multiple images (max 5)
+  async (req, res) => {
+    try {
+      // ==========================================
+      // 🖼 GET IMAGE URLs FROM CLOUDINARY
+      // ==========================================
+      // req.files contains uploaded images info
+      // file.path = Cloudinary URL
+      const imageUrls = req.files.map(file => file.path);
 
-    // 💰 Calculate total revenue
-    const orders = await orderModel.find();
-    const totalRevenue = orders.reduce(
-      (acc, order) => acc + order.totalPrice,
-      0
-    );
+      let specifications = {};
 
-    // ❌ Out of stock products
-    const outOfStock = await productModel.countDocuments({
-      quantity: 0
-    });
+      if (req.body.specifications) {
+        try {
+          specifications = JSON.parse(req.body.specifications);
+        } catch (err) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid specifications format"
+          });
+        }
+      }
+      // ==========================================
+      // 📥 EXTRACT DATA FROM BODY
+      // ==========================================
+      const {
+        name,
+        description,
+        offerPrice,
+        originalPrice,
+        category,
+        quantity
+      } = req.body;
 
-    res.status(200).json({
-      success: true,
-      totalProducts,
-      totalOrders,
-      totalUsers,
-      totalRevenue,
-      outOfStock
-    });
+      // ==========================================
+      // ❌ VALIDATION
+      // ==========================================
+      if (!name || !offerPrice || !category || !quantity) {
+        return res.status(400).json({
+          success: false,
+          message: "Please fill all required fields"
+        });
+      }
 
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+      // ==========================================
+      // 🧾 CREATE PRODUCT IN DATABASE
+      // ==========================================
+      const product = await productModel.create({
+        name,
+        brand,
+        description,
+        offerPrice,
+        originalPrice,
+        category,
+        quantity,
+        specifications, // ✅ parsed JSON
+        images: imageUrls // ✅ array of image URLs from Cloudinary
+      });
+
+
+      // ==========================================
+      // ✅ SUCCESS RESPONSE
+      // ==========================================
+      return res.status(201).json({
+        success: true,
+        message: "Product added successfully",
+        product
+      });
+
+    } catch (err) {
+
+      // ==========================================
+      // ❌ ERROR HANDLING
+      // ==========================================
+      return res.status(500).json({
+        success: false,
+        message: err.message
+      });
+    }
   }
-});
+);

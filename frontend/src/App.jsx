@@ -24,6 +24,7 @@ import Products from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
 import Users from "./pages/admin/Users";
 
+import AddProduct from "./pages/admin/AddProduct";
 
 // TOASTIFY for notifications
 import { ToastContainer } from "react-toastify";
@@ -112,7 +113,10 @@ function App() {
             <Route path="products" element={<Products />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="users" element={<Users />} />
+
+            <Route path="add-product" element={<AddProduct />} />
           </Route>
+          {/* <Route path="/admin/add-product" element={<AddProduct />} /> */}
         </Routes>
       </BrowserRouter>
     </>

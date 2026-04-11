@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "../../axios_instance";
 import { toast } from "react-toastify";
 import Pagination from "react-js-pagination";
+import { useNavigate } from "react-router-dom";
+
 import VideoLoader from "../../components/VideoLoader";
 
 import "../../assets/styles/AdminProducts.css";
@@ -41,7 +43,7 @@ const IconDelete = () => (
 // MAIN COMPONENT
 // =============================================
 const Products = () => {
-
+  const navigate = useNavigate();
   // ==========================================
   // STATE
   // ==========================================
@@ -145,7 +147,7 @@ const Products = () => {
           <h2 className="prod-title">Products</h2>
 
           {/* Add Product — green button (no handler yet, add onClick later) */}
-          <button className="prod-add-btn">
+          <button className="prod-add-btn" onClick={() => navigate("/admin/add-product")} >
             <span>＋</span>
             Add Product
           </button>

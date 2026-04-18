@@ -36,6 +36,7 @@ import { loadUser } from './redux/userSlice';
 
 // PROTECTED ROUTE COMPONENT
 import ProtectedRoute from "./components/ProtectedRoute";
+import EditProduct from './pages/admin/EditProduct';
 
 function App() {
 
@@ -115,6 +116,7 @@ function App() {
             <Route path="users" element={<Users />} />
 
             <Route path="add-product" element={<AddProduct />} />
+            <Route path="product/:id/edit" element={<EditProduct />} />
           </Route>
           {/* <Route path="/admin/add-product" element={<AddProduct />} /> */}
         </Routes>

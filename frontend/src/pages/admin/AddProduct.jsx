@@ -66,17 +66,6 @@ const AddProduct = () => {
     // ==========================================
     // IMAGE SELECT
     // ==========================================
-    // old code without commands
-    // const handleImageChange = (e) => {
-    //     // Convert FileList to Array 
-    //     const files = Array.from(e.target.files);
-
-    //     setImages(files);
-
-    //     // Generate preview URLs
-    //     const previewUrls = files.map(file => URL.createObjectURL(file));
-    //     setPreview(previewUrls);
-    // };
     const handleImageChange = (e) => {
 
         // ==========================================
@@ -104,6 +93,54 @@ const AddProduct = () => {
         //   File { name: "img1.jpg", ... },
         //   File { name: "img2.png", ... }
         // ]
+
+        // ==========================================
+        // ❌ LIMIT TO MAX 5 IMAGES
+        // ==========================================
+        // Prevent selecting more than 5 images
+        if (files.length > 5) {
+            toast.error("Maximum 5 images allowed");
+            return;
+        }
+
+        // ==========================================
+        // 🖼 IMAGE TYPE VALIDATION
+        // ==========================================
+        // Allowed MIME types (browser-based)
+        const validTypes = ["image/jpeg", "image/png", "image/webp"];
+
+        // Allowed extensions (extra safety)
+        const validExtensions = ["jpg", "jpeg", "png", "webp", "jfif"];
+
+        for (let file of files) {
+
+            // Get file extension
+            const extension = file.name.split(".").pop().toLowerCase();
+
+            // Check MIME type OR extension
+            const isValidType = validTypes.includes(file.type);
+            const isValidExtension = validExtensions.includes(extension);
+
+            if (!isValidType && !isValidExtension) {
+                toast.error("Only JPG, JPEG, PNG, WEBP, JFIF formats are allowed");
+                return;
+            }
+        }
+
+        // ==========================================
+        // 📦 FILE SIZE VALIDATION
+        // ==========================================
+        // Limit each file size to 2MB
+        for (let file of files) {
+
+            // file.size is in bytes
+            // 2MB = 2 * 1024 * 1024
+            if (file.size > 2 * 1024 * 1024) {
+                toast.error("Each image must be less than 2MB");
+                return;
+            }
+        }
+
 
 
         // ==========================================
@@ -143,6 +180,9 @@ const AddProduct = () => {
         // Convert to array
         // Store in state
         // Create preview URL
+        // 5 images max, 2MB max, check formats
+        // check image formats and size
+        // Show preview in UI
         // Send via FormData
 
         // 🖥️ Backend:
@@ -468,8 +508,10 @@ const AddProduct = () => {
                     <option value="12GB">12GB</option>
                 </select>
 
-                {/* ================= IMAGE ================= */}
-
+                {/* ================= IMAGE Upload ================= */}
+                <small style={{ color: "#888" }}>
+                    Upload images (JPG, PNG, WEBP • Max 2MB each • Max 5 images)
+                </small>
                 <input type="file" multiple onChange={handleImageChange} className="form-control mb-3" />
 
                 {/* PREVIEW IMAGES WITH REMOVE */}

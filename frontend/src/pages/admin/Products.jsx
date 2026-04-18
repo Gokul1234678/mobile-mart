@@ -22,8 +22,8 @@ const IconEdit = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2.5"
     strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
@@ -32,10 +32,10 @@ const IconDelete = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2.5"
     strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6"/>
-    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-    <path d="M10 11v6"/><path d="M14 11v6"/>
-    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6" /><path d="M14 11v6" />
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
   </svg>
 );
 
@@ -48,7 +48,7 @@ const Products = () => {
   // STATE
   // ==========================================
   const [products, setProducts] = useState([]); // all products from API
-  const [loading,  setLoading]  = useState(true); // show loader while fetching
+  const [loading, setLoading] = useState(true); // show loader while fetching
 
   const [search, setSearch] = useState(""); // search input value
 
@@ -92,7 +92,7 @@ const Products = () => {
   // PAGINATION LOGIC
   // Slice the filtered array to show only current page items
   // ==========================================
-  const indexOfLast  = activePage * itemsPerPage;       // last item index on this page
+  const indexOfLast = activePage * itemsPerPage;       // last item index on this page
   const indexOfFirst = indexOfLast - itemsPerPage;       // first item index on this page
 
   const currentProducts = filteredProducts.slice(
@@ -111,9 +111,9 @@ const Products = () => {
 
     try {
       await axiosInstance.delete(`/api/product/${id}`,
-      {
-         withCredentials: true
-      });
+        {
+          withCredentials: true
+        });
 
       toast.success("Product deleted");
 
@@ -137,7 +137,7 @@ const Products = () => {
   // ==========================================
   return (
     <>
-     
+
       <div className="prod-page">
 
         {/* ==========================================
@@ -265,11 +265,11 @@ const Products = () => {
                       <div className="prod-actions">
 
                         {/* Edit button — blue, pencil icon */}
-                        <button className="prod-action-btn edit">
+                        <button onClick={() => navigate(`/admin/product/${ product._id }/edit`)} className="prod-action-btn edit">
                           <IconEdit />
                           Edit
                         </button>
-
+                       
                         {/* Delete button — red, trash icon, calls deleteProduct */}
                         <button
                           className="prod-action-btn delete"

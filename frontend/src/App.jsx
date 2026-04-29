@@ -22,6 +22,7 @@ import AdminRoute from "./admin/AdminRoute";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
+import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
 import Users from "./pages/admin/Users";
 
 import AddProduct from "./pages/admin/AddProduct";
@@ -113,10 +114,12 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="products" element={<Products />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="orders/:id" element={<AdminOrderDetails />} />
             <Route path="users" element={<Users />} />
-
+            
             <Route path="add-product" element={<AddProduct />} />
             <Route path="product/:id/edit" element={<EditProduct />} />
+            
           </Route>
           {/* <Route path="/admin/add-product" element={<AddProduct />} /> */}
         </Routes>

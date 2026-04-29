@@ -2485,9 +2485,6 @@ app.post("/api/orders", isAuthenticatedUser, async (req, res) => {
 );
 
 
-
-
-
 // ✅ Get My Orders (Logged-in User)
 app.get("/api/orders/my", isAuthenticatedUser, async (req, res) => {
   try {
@@ -2681,7 +2678,6 @@ app.get("/api/orders/:id", isAuthenticatedUser, async (req, res) => {
 }
 );
 
-
 // ✅ Get All Orders (🔐 Admin)
 app.get("/api/admin/orders", isAuthenticatedUser, isAdmin, async (req, res) => {
   try {
@@ -2774,10 +2770,10 @@ app.put("/api/admin/orders/:id", isAuthenticatedUser, isAdmin, async (req, res) 
     // ------------------------------------------------------------
     // 3️⃣ Prevent updating delivered orders
     // ------------------------------------------------------------
-    if (order.orderStatus === "delivered") {
+    if (order.orderStatus === "delivered" || order.orderStatus === "cancelled" ) {
       return res.status(400).json({
         success: false,
-        message: "Order has already been delivered and cannot be updated"
+        message: "Order cannot be updated as it is already delivered or cancelled"
       });
     }
 

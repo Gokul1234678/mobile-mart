@@ -1,65 +1,193 @@
-const handleImageChange = (e) => {
+import React, { useEffect, useState } from "react";
+import axiosInstance from "../../axios_instance";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-  // Convert FileList → Array
-  const files = Array.from(e.target.files);
+const Orders = () => {
+
+  const [orders, setOrders] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   // ==========================================
-  // ❌ LIMIT TO MAX 5 IMAGES
+  // 📦 FETCH ALL ORDERS
   // ==========================================
-  // Prevent selecting more than 5 images
-  if (files.length > 5) {
-    toast.error("Maximum 5 images allowed");
-    return;
-  }
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
 
-  // ==========================================
-  // 🖼 IMAGE TYPE VALIDATION
-  // ==========================================
-  // Allowed MIME types (browser-based)
-  const validTypes = ["image/jpeg", "image/png", "image/webp"];
+      const { data } = await axiosInstance.get("/api/admin/orders", {
+        withCredentials: true
+      });
 
-  // Allowed extensions (extra safety)
-  const validExtensions = ["jpg", "jpeg", "png", "webp", "jfif"];
+      setOrders(data.orders);
+      setTotalAmount(data.totalAmount);
 
-  for (let file of files) {
-
-    // Get file extension
-    const extension = file.name.split(".").pop().toLowerCase();
-
-    // Check MIME type OR extension
-    const isValidType = validTypes.includes(file.type);
-    const isValidExtension = validExtensions.includes(extension);
-
-    if (!isValidType && !isValidExtension) {
-      toast.error("Only JPG, JPEG, PNG, WEBP, JFIF formats are allowed");
-      return;
+    } catch (err) {
+      toast.error("Failed to load orders");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   // ==========================================
-  // 📦 FILE SIZE VALIDATION
+  // 🔄 UPDATE ORDER STATUS
   // ==========================================
-  // Limit each file size to 2MB
-  for (let file of files) {
+  const updateStatus = async (id, status) => {
+    try {
+      await axiosInstance.put(`/api/admin/orders/${id}`,
+        { orderStatus: status },
+        { withCredentials: true }
+      );
 
-    // file.size is in bytes
-    // 2MB = 2 * 1024 * 1024
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Each image must be less than 2MB");
-      return;
+      toast.success("Order updated");
+      fetchOrders(); // refresh list
+
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Update failed");
     }
-  }
+  };
 
   // ==========================================
-  // ✅ SAVE IMAGES TO STATE
+  // 🗑 DELETE ORDER
   // ==========================================
-  setImages(files);
+  const deleteOrder = async (id) => {
+    const confirmDelete = window.confirm("Are you sure?");
+
+    if (!confirmDelete) return;
+
+    try {
+      await axiosInstance.delete(`/api/admin/orders/${id}`, {
+        withCredentials: true
+      });
+
+      toast.success("Order deleted");
+      fetchOrders();
+
+    } catch (err) {
+      toast.error("Delete failed");
+    }
+  };
 
   // ==========================================
-  // 👁 CREATE PREVIEW IMAGES
+  // 🎨 STATUS COLOR
   // ==========================================
-  // Generate preview URLs for UI display
-  const previewUrls = files.map(file => URL.createObjectURL(file));
+  const getStatusColor = (status) => {
+    if (status === "processing") return "orange";
+    if (status === "shipped") return "blue";
+    if (status === "delivered") return "green";
+    if (status === "cancelled") return "red";
+  };
 
-  setPreview(previewUrls);
+  return (
+    <div className="container mt-4">
+
+      <h2>Admin Orders</h2>
+
+      {/* 🔥 SUMMARY */}
+      <div className="mb-3">
+        <strong>Total Orders:</strong> {orders.length} <br />
+        <strong>Total Revenue:</strong> ₹{totalAmount}
+      </div>
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="table-responsive">
+
+          <table className="table table-bordered text-center">
+
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              {orders.map((order) => (
+
+                <tr key={order._id}>
+
+                  {/* ID */}
+                  <td title={order._id} >{order._id.slice(-6)}</td>
+
+                  {/* USER */}
+                  <td>{order.user?.name}</td>
+
+                  {/* PRICE */}
+                  <td>₹{order.totalPrice}</td>
+
+                  {/* STATUS */}
+                  <td style={{ color: getStatusColor(order.orderStatus) }}>
+                    {order.orderStatus}
+                  </td>
+
+                  {/* DATE */}
+                  <td>
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </td>
+
+                  {/* ACTIONS */}
+                  <td>
+                    <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
+
+                      {/* VIEW */}
+                      <button
+                        className="btn btn-sm btn-info"
+                        onClick={() => navigate(`/admin/orders/${order._id}`)}
+                      >
+                        👁 View
+                      </button>
+
+                      {/* DELETE */}
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => deleteOrder(order._id)}
+                      >
+                        🗑 Delete
+                      </button>
+
+                    </div>
+
+                    {/* STATUS DROPDOWN BELOW */}
+                    <select
+                      className="form-select form-select-sm mt-2"
+                      value={order.orderStatus}
+                      disabled={order.orderStatus === "delivered"}
+                      onChange={(e) =>
+                        updateStatus(order._id, e.target.value)
+                      }
+                    >
+                      <option value="processing">Processing</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </td>
+
+                </tr>
+              ))}
+
+            </tbody>
+
+          </table>
+
+        </div>
+      )}
+    </div>
+  );
 };
+
+// export default Orders;

@@ -1,28 +1,34 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import axiosInstance from "../../axios_instance";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Pagination from "react-js-pagination";
-import VideoLoader from "../../components/VideoLoader";
-
-import "../../assets/styles/AdminProducts.css";
 
 // =============================================
 // Self-contained styles — matches admin theme
-// Navy sidebar (#2b3643) + orange (#ff5722) accents
+// Same design language as Products page
 // =============================================
 const styles = `
 
   /* ==========================================
+     ANIMATIONS
+  ========================================== */
+  @keyframes orders-fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ==========================================
      PAGE WRAPPER
   ========================================== */
-  .prod-page {
+  .orders-admin-page {
     font-family: inherit;
+    animation: orders-fadeUp 0.4s ease both;
   }
 
   /* ==========================================
      PAGE HEADER
   ========================================== */
-  .prod-header {
+  .orders-admin-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -31,344 +37,309 @@ const styles = `
     gap: 12px;
   }
 
-  .prod-title {
-    font-size: 2rem;             /* bigger title */
-    font-weight: 700;
+  .orders-admin-title {
+    font-size: 2rem;
+    font-weight: 600;
     color: #111;
     margin: 0;
   }
 
-  /* Add Product button — bigger and bolder */
-  .prod-add-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 11px 24px;          /* more padding = bigger button */
-    background: #198754;
-    color: #fff;
-    border: none;
-    border-radius: 5px;          /* less round */
-    font-size: 1rem;             /* bigger font */
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s;
+  /* ==========================================
+     SUMMARY STRIP — total orders + revenue
+  ========================================== */
+  .orders-summary-strip {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
   }
 
-  .prod-add-btn:hover {
-    background: #157347;
+  /* Each summary pill */
+  .orders-summary-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 14px 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    border-left: 4px solid var(--pill-color, #ff5722); /* colored left bar */
+    min-width: 180px;
+  }
+
+  .orders-summary-icon {
+    font-size: 1.5rem;
+  }
+
+  .orders-summary-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+  }
+
+  .orders-summary-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #111;
+    line-height: 1;
   }
 
   /* ==========================================
-     SEARCH BAR — bigger
+     LOADING STATE
   ========================================== */
-  .prod-search-wrap {
-    position: relative;
-    margin-bottom: 16px;
-    max-width: 420px;
-  }
-
-  .prod-search-icon {
-    position: absolute;
-    left: 13px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #aaa;
+  .orders-loading {
+    text-align: center;
+    padding: 48px;
     font-size: 1rem;
-    pointer-events: none;
-  }
-
-  .prod-search-input {
-    width: 100%;
-    padding: 11px 14px 11px 40px; /* taller input */
-    border: 1.5px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;              /* bigger font */
-    font-family: inherit;
-    color: #333;
-    background: #fff;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    box-sizing: border-box;
-  }
-
-  .prod-search-input:focus {
-    border-color: #ff5722;
-    box-shadow: 0 0 0 3px rgba(255,87,34,0.1);
-  }
-
-  .prod-search-input::placeholder {
-    color: #bbb;
-  }
-
-  /* Result count text */
-  .prod-result-count {
-    font-size: 0.92rem;
-    color: #777;
-    margin-bottom: 12px;
-  }
-
-  .prod-result-count strong {
-    color: #333;
+    color: #888;
   }
 
   /* ==========================================
      TABLE WRAPPER
   ========================================== */
-  .prod-table-card {
+  .orders-table-card {
     background: #fff;
-    border-radius: 6px;          /* less round */
+    border-radius: 6px;
     box-shadow: 0 1px 6px rgba(0,0,0,0.1);
     overflow: hidden;
     margin-bottom: 24px;
+    overflow-x: auto; /* horizontal scroll on small screens */
   }
 
   /* ==========================================
      TABLE
   ========================================== */
-  .prod-table {
+  .orders-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.96rem;          /* bigger base font */
+    font-size: 1.02rem;    /* increased */
+    min-width: 700px; /* prevents squishing on mobile */
   }
 
-  /* Dark navy header */
-  .prod-table thead tr {
+  /* Dark navy header — matches Products table */
+  .orders-table thead tr {
     background: #2b3643;
     color: #fff;
   }
 
-  .prod-table th {
-    padding: 15px 16px;          /* taller header cells */
-    font-size: 0.85rem;
-    font-weight: 700;
+  .orders-table th {
+    padding: 15px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     white-space: nowrap;
     border: none;
+    text-align: left;
   }
 
-  .prod-table td {
-    padding: 14px 16px;          /* taller body cells */
+  /* Center align specific columns */
+  .orders-table th.center,
+  .orders-table td.center {
+    text-align: center;
+  }
+
+  .orders-table td {
+    padding: 14px 16px;
     color: #222;
     border-bottom: 1px solid #eeeeee;
     vertical-align: middle;
-    font-size: 0.96rem;          /* bigger cell text */
+    font-size: 1.02rem;
   }
 
-  .prod-table tbody tr:last-child td {
+  .orders-table tbody tr:last-child td {
     border-bottom: none;
   }
 
-  /* Hover row highlight */
-  .prod-table tbody tr:hover {
+  /* Row hover */
+  .orders-table tbody tr:hover {
     background: #f9f9f9;
   }
 
-  /* Row index — muted */
-  .prod-row-index {
-    color: #888;
+  /* Shortened order ID — monospace font */
+  .orders-id {
+    font-family: monospace;
+    font-size: 0.92rem;
+    color: #111;                 /* black ID */
     font-weight: 600;
-    font-size: 0.9rem;
+    cursor: help;                /* shows full ID on hover via title attr */
   }
 
-  /* Product image */
-  .prod-img {
-    width: 54px;                 /* slightly bigger image */
-    height: 54px;
-    object-fit: cover;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    display: block;
+  /* User name */
+  .orders-user {
+    font-weight: 500;
+    color: #111;
   }
 
-  /* Product name */
-  .prod-name {
+  /* Order amount — black bold */
+  .orders-amount {
     font-weight: 600;
     color: #111;
-    font-size: 0.96rem;
+    font-size: 1.05rem;
   }
 
-  /* Price — BLACK not violet */
-  .prod-price {
-    font-weight: 700;
-    color: #111;                 /* black price */
-    font-size: 1rem;
-  }
-
-  /* Stock number */
-  .prod-stock {
-    font-weight: 600;
-    color: #333;
-    font-size: 0.96rem;
+  /* Order date — muted */
+  .orders-date {
+    color: #666;
+    font-size: 0.94rem;
+    white-space: nowrap;
   }
 
   /* ==========================================
-     STATUS BADGES — simpler, less round
+     STATUS BADGE
   ========================================== */
-  .prod-badge {
+  .orders-status-badge {
     display: inline-block;
     padding: 5px 12px;
-    border-radius: 4px;          /* almost flat, not pill shape */
+    border-radius: 4px;
     font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
+    font-weight: 600;
     text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
   }
 
-  /* Green = in stock */
-  .prod-badge.in-stock {
-    background: #d4edda;
-    color: #155724;
+  .orders-status-badge.processing { background: #fff3cd; color: #856404; }
+  .orders-status-badge.shipped    { background: #cfe2ff; color: #084298; }
+  .orders-status-badge.delivered  { background: #d1e7dd; color: #0f5132; }
+  .orders-status-badge.cancelled  { background: #f8d7da; color: #842029; }
+  .orders-status-badge.pending    { background: #e2e3e5; color: #41464b; }
+
+  /* ==========================================
+     STATUS DROPDOWN
+  ========================================== */
+  .orders-status-select {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1.5px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    color: #333;
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+    margin-top: 8px;
+    transition: border-color 0.2s;
   }
 
-  /* Red = out of stock */
-  .prod-badge.out-stock {
-    background: #f8d7da;
-    color: #721c24;
+  .orders-status-select:focus {
+    border-color: #ff5722;
+  }
+
+  /* Disabled when delivered — greyed out */
+  .orders-status-select:disabled {
+    background: #f5f5f5;
+    color: #aaa;
+    cursor: not-allowed;
   }
 
   /* ==========================================
      ACTION BUTTONS
   ========================================== */
-  .prod-actions {
+  .orders-actions {
     display: flex;
-    align-items: center;
     gap: 8px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
-  .prod-action-btn {
+  .orders-action-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 14px;           /* bigger buttons */
+    gap: 5px;
+    padding: 7px 14px;
     border: none;
     border-radius: 4px;
-    font-size: 0.88rem;
-    font-weight: 700;
+    font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
     transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
   }
 
-  /* Edit — blue */
-  .prod-action-btn.edit {
-    background: #0d6efd;
+  /* View — violet outlined style */
+  .orders-action-btn.view {
+    background: transparent;
+    color: #6a0dad;
+    border: 1.5px solid #6a0dad;
+  }
+
+  .orders-action-btn.view:hover {
+    background: #6a0dad;
     color: #fff;
-  }
-
-  .prod-action-btn.edit:hover {
-    background: #0b5ed7;
     transform: translateY(-1px);
   }
 
   /* Delete — red */
-  .prod-action-btn.delete {
+  .orders-action-btn.delete {
     background: #dc3545;
     color: #fff;
   }
 
-  .prod-action-btn.delete:hover {
+  .orders-action-btn.delete:hover {
     background: #bb2d3b;
     transform: translateY(-1px);
-  }
-
-  .prod-action-btn svg {
-    flex-shrink: 0;
   }
 
   /* ==========================================
      EMPTY STATE
   ========================================== */
-  .prod-empty {
+  .orders-empty {
     text-align: center;
     padding: 48px 20px;
     color: #aaa;
   }
 
-  .prod-empty-icon {
+  .orders-empty-icon {
     font-size: 2.5rem;
     margin-bottom: 10px;
     opacity: 0.3;
   }
 
-  .prod-empty p {
+  .orders-empty p {
     font-size: 1rem;
     margin: 0;
-  }
-
-  /* ==========================================
-     PAGINATION
-  ========================================== */
-  .prod-pagination {
-    display: flex;
-    justify-content: center;
-    margin-top: 8px;
-  }
-
-  .prod-pagination .pagination {
-    display: flex;
-    gap: 4px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .prod-pagination .page-item .page-link {
-    padding: 8px 14px;
-    border: 1.5px solid #dee2e6;
-    border-radius: 4px !important;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: #444;
-    background: #fff;
-    text-decoration: none;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-  }
-
-  /* Active page — orange */
-  .prod-pagination .page-item.active .page-link {
-    background: #ff5722;
-    color: #fff;
-    border-color: #ff5722;
-  }
-
-  .prod-pagination .page-item:not(.active) .page-link:hover {
-    background: #fff3ef;
-    border-color: #ff5722;
-    color: #ff5722;
-  }
-
-  .prod-pagination .page-item.disabled .page-link {
-    opacity: 0.4;
-    cursor: not-allowed;
   }
 
   /* ==========================================
      RESPONSIVE
   ========================================== */
   @media (max-width: 768px) {
-    .prod-title { font-size: 1.6rem; }
-    .prod-table-card { overflow-x: auto; }
-    .prod-table th, .prod-table td { padding: 11px 12px; font-size: 0.88rem; }
+    .orders-admin-title  { font-size: 1.6rem; }
+    .orders-summary-pill { min-width: 140px; padding: 12px 14px; }
+    .orders-summary-value { font-size: 1.1rem; }
+    .orders-table td, .orders-table th { padding: 11px 12px; font-size: 0.88rem; }
+  }
+
+  @media (max-width: 480px) {
+    .orders-summary-strip { flex-direction: column; }
+    .orders-summary-pill  { min-width: unset; width: 100%; }
   }
 `;
 
 // =============================================
-// SVG ICON COMPONENTS — inline, no library needed
+// SVG ICONS — inline, no library needed
 // =============================================
 
-/* Pencil icon for Edit button */
-const IconEdit = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+/* Eye icon for View button */
+// it is used instead of emoji to maintain consistent size and alignment with Delete button text. The emoji was slightly larger and caused the button height to increase, making the UI look uneven. The SVG icon can be sized and styled to match the Delete button text perfectly, creating a more polished and cohesive design. */
+const IconView = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2.5"
     strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
   </svg>
 );
 
 /* Trash icon for Delete button */
 const IconDelete = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2.5"
     strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6"/>
@@ -381,95 +352,94 @@ const IconDelete = () => (
 // =============================================
 // MAIN COMPONENT
 // =============================================
-const Products = () => {
-
+const Orders = () => {
   // ==========================================
   // STATE
   // ==========================================
-  const [products, setProducts] = useState([]); // all products from API
-  const [loading,  setLoading]  = useState(true); // show loader while fetching
+  const [orders,      setOrders]      = useState([]);  // all admin orders
+  const [totalAmount, setTotalAmount] = useState(0);   // total revenue across orders
+  const [loading,     setLoading]     = useState(false); // fetch loading state
 
-  const [search, setSearch] = useState(""); // search input value
-
-  // Pagination — current active page number
-  const [activePage, setActivePage] = useState(1);
-  const itemsPerPage = 6; // products shown per page
+  const navigate = useNavigate();// for navigating to order detail page
 
   // ==========================================
-  // FETCH PRODUCTS
-  // GET /api/products — loads all products on mount
+  // FETCH ALL ORDERS
+  // GET /api/admin/orders — admin only route
   // ==========================================
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axiosInstance.get("/api/admin/orders", {
+        withCredentials: true // include cookies for auth
+      });
+      setOrders(data.orders);// set orders list
+      setTotalAmount(data.totalAmount); // set total revenue
+    } catch (err) {
+      toast.error("Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Run on render to load orders list
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const { data } = await axiosInstance.get("/api/products", {
-          withCredentials: true // to send cookies for authentication
-        });
-        setProducts(data.products);
-      } catch (err) {
-        toast.error("Failed to load products");
-      } finally {
-        setLoading(false); // hide loader regardless of result
-      }
-    };
-
-    fetchProducts();
+    fetchOrders();
   }, []);
 
   // ==========================================
-  // SEARCH FILTER
-  // useMemo recomputes filteredProducts only when products or search changes
-  // improving performance — avoids re-filtering on every render
+  // UPDATE ORDER STATUS
+  // PUT /api/admin/orders/:id
+  // Refreshes list after update
   // ==========================================
-  const filteredProducts = useMemo(() => {
-    return products.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) // case-insensitive search
-    );
-  }, [products, search]);
+  const updateStatus = async (id, status) => {
+    try {
+      await axiosInstance.put(`/api/admin/orders/${id}`,
+        { orderStatus: status },// request body with new status
+        { withCredentials: true } // include cookies for auth
+      );
+      toast.success("Order updated");
+
+      fetchOrders(); // refresh to show updated status
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Update failed");
+    }
+  };
 
   // ==========================================
-  // PAGINATION LOGIC
-  // Slice the filtered array to show only current page items
+  // DELETE ORDER
+  // DELETE /api/admin/orders/:id
   // ==========================================
-  const indexOfLast  = activePage * itemsPerPage;       // last item index on this page
-  const indexOfFirst = indexOfLast - itemsPerPage;       // first item index on this page
-
-  const currentProducts = filteredProducts.slice(
-    indexOfFirst,
-    indexOfLast
-  );
-
-  // ==========================================
-  // DELETE PRODUCT
-  // DELETE /api/product/:id
-  // Removes product from UI immediately after success (no refetch needed)
-  // ==========================================
-  const deleteProduct = async (id) => {
-
-    if (!window.confirm("Delete this product?")) return; // user confirmation guard
+  const deleteOrder = async (id) => {
+    const confirmDelete = window.confirm("Are you sure?");// simple confirmation dialog
+    if (!confirmDelete) return;// if user cancels, do nothing
 
     try {
-      await axiosInstance.delete(`/api/product/${id}`,
-      {
-         withCredentials: true
+      // Make API call to delete order, then refresh list after deletion
+      await axiosInstance.delete(`/api/admin/orders/${id}`, {
+        withCredentials: true// include cookies for auth
       });
+      toast.success("Order deleted");
 
-      toast.success("Product deleted");
-
-      // Filter out deleted product from local state — avoids refetch
-      setProducts(products.filter((p) => p._id !== id));
-
-    } catch {
+      fetchOrders(); // refresh list after deletion
+    } catch (err) {
       toast.error("Delete failed");
     }
   };
 
   // ==========================================
-  // LOADING STATE
+  // STATUS BADGE CLASS
+  // Maps orderStatus string to CSS class name
   // ==========================================
-  if (loading) {
-    return <VideoLoader />;
-  }
+  const getStatusCls = (status) => {// it is for assigning CSS classes to the status badge based on the order status. Each status (like "processing", "shipped", etc.) has a corresponding CSS class that applies specific colors and styles to the badge. This function takes the orderStatus string, converts it to lowercase, and returns the appropriate class name for styling the badge in the UI. If the status doesn't match any known values, it defaults to "pending".
+    const map = {
+      processing: "processing",
+      shipped:    "shipped",
+      delivered:  "delivered",
+      cancelled:  "cancelled",
+      pending:    "pending",
+    };
+    return map[status?.toLowerCase()] || "pending"; // fallback to pending
+  };
 
   // ==========================================
   // RENDER
@@ -477,180 +447,164 @@ const Products = () => {
   return (
     <>
       <style>{styles}</style>
-      <div className="prod-page">
-
-        {/* ==========================================
-            PAGE HEADER — title + Add Product button
-        ========================================== */}
-        <div className="prod-header">
-          <h2 className="prod-title">Products</h2>
-
-          {/* Add Product — green button (no handler yet, add onClick later) */}
-          <button className="prod-add-btn">
-            <span>＋</span>
-            Add Product
-          </button>
+      <div className="orders-admin-page">
+        
+        {/*PAGE HEADER*/}
+        <div className="orders-admin-header">
+          <h2 className="orders-admin-title">Admin Orders</h2>
         </div>
 
         {/* ==========================================
-            SEARCH BAR
-            Resets to page 1 on every keystroke
+            SUMMARY STRIP — total orders + revenue
         ========================================== */}
-        <div className="prod-search-wrap">
-          <span className="prod-search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="prod-search-input"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setActivePage(1); // reset to first page when search changes
-            }}
-          />
-        </div>
+        <div className="orders-summary-strip">
 
-        {/* Result count — shows how many products match the search */}
-        <div className="prod-result-count">
-          Showing <strong>{currentProducts.length}</strong> of{" "}
-          <strong>{filteredProducts.length}</strong> products
+          {/* Total orders pill — orange left bar */}
+          <div className="orders-summary-pill" style={{ "--pill-color": "#ff5722" }}>
+            <span className="orders-summary-icon">🧾</span>
+            <div>
+              <div className="orders-summary-label">Total Orders</div>
+              <div className="orders-summary-value">{orders.length}</div>
+            </div>
+          </div>
+
+          {/* Total revenue pill — green left bar */}
+          <div className="orders-summary-pill" style={{ "--pill-color": "#198754" }}>
+            <span className="orders-summary-icon">💰</span>
+            <div>
+              <div className="orders-summary-label">Total Revenue</div>
+              <div className="orders-summary-value">₹{totalAmount}</div>
+            </div>
+          </div>
+
         </div>
 
         {/* ==========================================
-            PRODUCTS TABLE — wrapped in white card
+            LOADING STATE
         ========================================== */}
-        <div className="prod-table-card">
-          <table className="prod-table">
+        {loading ? (
+          <div className="orders-loading">Loading orders...</div>
+        ) : (
 
-            {/* Table header — navy background */}
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+          /* ==========================================
+              ORDERS TABLE
+          ========================================== */
+          <div className="orders-table-card">
+            <table className="orders-table">
 
-            <tbody>
-              {/* ---- Empty State ---- */}
-              {currentProducts.length === 0 ? (
+              {/* Table header — navy background */}
+              <thead>
                 <tr>
-                  <td colSpan="7">
-                    <div className="prod-empty">
-                      <div className="prod-empty-icon">📦</div>
-                      <p>No products found</p>
-                    </div>
-                  </td>
+                  <th>Order ID</th>
+                  <th>User</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th className="center">Actions</th>
                 </tr>
-              ) : (
-                currentProducts.map((product, index) => (
-                  <tr key={product._id}>
+              </thead>
 
-                    {/* ---- Row Index ---- */}
-                    <td>
-                      <span className="prod-row-index">
-                        {/* Correct index accounting for current page offset */}
-                        {(activePage - 1) * itemsPerPage + index + 1}
-                      </span>
-                    </td>
-
-                    {/* ---- Product Image ---- */}
-                    <td>
-                      <img
-                        src={product.images?.[0]}
-                        alt={product.name}
-                        className="prod-img"
-                      />
-                    </td>
-
-                    {/* ---- Product Name ---- */}
-                    <td>
-                      <span className="prod-name">{product.name}</span>
-                    </td>
-
-                    {/* ---- Offer Price ---- */}
-                    <td>
-                      <span className="prod-price">₹{product.offerPrice}</span>
-                    </td>
-
-                    {/* ---- Stock Quantity ---- */}
-                    <td>
-                      <span className="prod-stock">{product.quantity}</span>
-                    </td>
-
-                    {/* ---- Stock Status Badge ---- */}
-                    <td>
-                      {product.quantity > 0 ? (
-                        /* Green badge — product is available */
-                        <span className="prod-badge in-stock">
-                          <span className="prod-badge-dot" />
-                          In Stock
-                        </span>
-                      ) : (
-                        /* Red badge — product unavailable */
-                        <span className="prod-badge out-stock">
-                          <span className="prod-badge-dot" />
-                          Out of Stock
-                        </span>
-                      )}
-                    </td>
-
-                    {/* ---- Action Buttons ---- */}
-                    <td>
-                      <div className="prod-actions">
-
-                        {/* Edit button — blue, pencil icon */}
-                        <button className="prod-action-btn edit">
-                          <IconEdit />
-                          Edit
-                        </button>
-
-                        {/* Delete button — red, trash icon, calls deleteProduct */}
-                        <button
-                          className="prod-action-btn delete"
-                          onClick={() => deleteProduct(product._id)}
-                        >
-                          <IconDelete />
-                          Delete
-                        </button>
-
+              <tbody>
+                {orders.length === 0 ? (
+                  /* Empty state */
+                  <tr>
+                    <td colSpan="6">
+                      <div className="orders-empty">
+                        <div className="orders-empty-icon">🧾</div>
+                        <p>No orders found</p>
                       </div>
                     </td>
-
                   </tr>
-                ))
-              )}
-            </tbody>
+                ) : (
+                  orders.map((order) => (
+                    <tr key={order._id}>
 
-          </table>
-        </div>
+                      {/* ---- Order ID — last 6 chars, full ID on hover ---- */}
+                      <td>
+                        <span className="orders-id" title={order._id}>
+                          #{order._id.slice(-6).toUpperCase()}
+                        </span>
+                      </td>
 
-        {/* ==========================================
-            PAGINATION
-            react-js-pagination — styled with orange active page
-        ========================================== */}
-        <div className="prod-pagination">
-          <Pagination
-            activePage={activePage}
-            itemsCountPerPage={itemsPerPage}
-            totalItemsCount={filteredProducts.length}
-            onChange={(pageNumber) => setActivePage(pageNumber)} // update page on click
-            itemClass="page-item"
-            linkClass="page-link"
-            prevPageText="← Prev"
-            nextPageText="Next →"
-            firstPageText="First"
-            lastPageText="Last"
-          />
-        </div>
+                      {/* ---- Customer name ---- */}
+                      <td>
+                        <span className="orders-user">{order.user?.name || "—"}</span>
+                      </td>
+
+                      {/* ---- Total price — black bold ---- */}
+                      <td>
+                        <span className="orders-amount">₹{order.totalPrice}</span>
+                      </td>
+
+                      {/* ---- Status badge + dropdown to change status ---- */}
+                      <td>
+                        {/* Badge shows current status with color */}
+                        <span className={`orders-status-badge ${getStatusCls(order.orderStatus)}`}>
+                          {order.orderStatus}
+                        </span>
+
+                        {/* Dropdown to update status — disabled when delivered */}
+                        <select
+                          className="orders-status-select"
+                          value={order.orderStatus}
+                          disabled={order.orderStatus === "delivered"} // can't change once delivered
+                          onChange={(e) => updateStatus(order._id, e.target.value)}
+                        >
+                          <option value="processing">Processing</option>
+                          <option value="shipped">Shipped</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </td>
+
+                      {/* ---- Order date ---- */}
+                      <td>
+                        <span className="orders-date">
+                          {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </td>
+
+                      {/* ---- Action buttons: View + Delete ---- */}
+                      <td className="center">
+                        <div className="orders-actions">
+
+                          {/* View — navigates to order detail page */}
+                          <button
+                            className="orders-action-btn view"
+                            onClick={() => navigate(`/admin/orders/${order._id}`)}
+                          >
+                            <IconView />
+                            View
+                          </button>
+
+                          {/* Delete — confirms then removes order */}
+                          <button
+                            className="orders-action-btn delete"
+                            onClick={() => deleteOrder(order._id)}
+                          >
+                            <IconDelete />
+                            Delete
+                          </button>
+
+                        </div>
+                      </td>
+
+                    </tr>
+                  ))
+                )}
+              </tbody>
+
+            </table>
+          </div>
+        )}
 
       </div>
     </>
   );
 };
 
-export default Products;
+export default Orders;

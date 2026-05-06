@@ -24,8 +24,8 @@ import Products from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
 import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
 import Users from "./pages/admin/Users";
-
 import AddProduct from "./pages/admin/AddProduct";
+import AdminUserDetails from "./pages/admin/AdminUserDetails";
 
 // TOASTIFY for notifications
 import { ToastContainer } from "react-toastify";
@@ -119,7 +119,10 @@ function App() {
             
             <Route path="add-product" element={<AddProduct />} />
             <Route path="product/:id/edit" element={<EditProduct />} />
-            
+            <Route
+  path="users/:id"
+  element={<AdminUserDetails />}
+/>
           </Route>
           {/* <Route path="/admin/add-product" element={<AddProduct />} /> */}
         </Routes>

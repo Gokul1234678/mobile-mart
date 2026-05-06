@@ -914,6 +914,17 @@ app.put("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) =
   //   Promote user to admin
   //   Demote admin to user
   try {
+
+    // ======================================================
+    // ❌ PREVENT ADMIN FROM CHANGING OWN ROLE
+    // ======================================================
+    if (req.user._id.toString() === req.params.id) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot change your own role"
+      });
+    }
+
     // ------------------------------------------------------------
     // 📥 1️⃣ Extract role from request body
     // ------------------------------------------------------------
@@ -927,6 +938,16 @@ app.put("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) =
       return res.status(400).json({
         success: false,
         message: "Role must be either 'user' or 'admin'"
+      });
+    }
+
+    // ------------------------------------------------------------
+    // ❌ Validate user ID format (must be a valid MongoDB ObjectId)
+    // ------------------------------------------------------------
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID"
       });
     }
 
@@ -969,7 +990,7 @@ app.put("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) =
     // ------------------------------------------------------------
     res.status(500).json({
       success: false,
-      message: "Invalid user ID"
+      message: error.message
     });
   }
 
@@ -979,7 +1000,18 @@ app.put("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) =
 // ✅ Delete User (🔐 ADMIN ONLY)
 app.delete("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) => {
   try {
+
+    // Important: You should NOT allow admins to delete their own account, otherwise they might accidentally delete themselves and lose admin access. So we check if the ID being deleted is the same as the logged-in admin's ID.
+    if (req.user._id.toString() === req.params.id) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot delete your own account"
+      });
+    }
+
+    // Delete user by ID
     const user = await userModel.findByIdAndDelete(req.params.id);
+
 
     if (!user) {
       return res.status(404).json({
@@ -2770,7 +2802,7 @@ app.put("/api/admin/orders/:id", isAuthenticatedUser, isAdmin, async (req, res) 
     // ------------------------------------------------------------
     // 3️⃣ Prevent updating delivered orders
     // ------------------------------------------------------------
-    if (order.orderStatus === "delivered" || order.orderStatus === "cancelled" ) {
+    if (order.orderStatus === "delivered" || order.orderStatus === "cancelled") {
       return res.status(400).json({
         success: false,
         message: "Order cannot be updated as it is already delivered or cancelled"

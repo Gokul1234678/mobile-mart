@@ -292,6 +292,12 @@ const MENU = [
   { name: "Products",  path: "/admin/products", icon: "📦", iconCls: "icon-products"  },
   { name: "Orders",    path: "/admin/orders",   icon: "🧾", iconCls: "icon-orders"    },
   { name: "Users",     path: "/admin/users",    icon: "👥", iconCls: "icon-users"     },
+  {
+    name: "Reviews",
+    path: "/admin/reviews",
+    icon: "⭐",
+    iconCls: "icon-reviews"
+  }
 ];
 
 // =============================================

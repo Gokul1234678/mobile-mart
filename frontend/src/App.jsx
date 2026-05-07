@@ -26,6 +26,7 @@ import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
 import Users from "./pages/admin/Users";
 import AddProduct from "./pages/admin/AddProduct";
 import AdminUserDetails from "./pages/admin/AdminUserDetails";
+import Reviews from "./pages/admin/Reviews";
 
 // TOASTIFY for notifications
 import { ToastContainer } from "react-toastify";
@@ -119,10 +120,8 @@ function App() {
             
             <Route path="add-product" element={<AddProduct />} />
             <Route path="product/:id/edit" element={<EditProduct />} />
-            <Route
-  path="users/:id"
-  element={<AdminUserDetails />}
-/>
+            <Route path="users/:id" element={<AdminUserDetails />} />
+            <Route path="reviews" element={<Reviews />} />
           </Route>
           {/* <Route path="/admin/add-product" element={<AddProduct />} /> */}
         </Routes>

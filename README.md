@@ -125,5 +125,5 @@ Backend: Coming Soon
 ### Gokul Selvan
 
 - Portfolio: https://gokul-selvan-dev.netlify.app/
-- GitHub: Add Your GitHub Link
-- LinkedIn: Add Your LinkedIn Link
+- GitHub: https://github.com/Gokul1234678
+- LinkedIn: https://www.linkedin.com/in/gokul-selvan16

@@ -18,7 +18,7 @@ import { Helmet } from "react-helmet-async";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 
-
+import { toast } from "react-toastify"; 
 // Styles
 import "../assets/styles/productView.css";
 import VideoLoader from "../components/VideoLoader";
@@ -196,14 +196,32 @@ const ProductView = () => {
               <button
                 className="btn-add-to-cart"
                 disabled={product.quantity === 0}
-                onClick={() => dispatch(addToCart({
-                  ...product,
-                  quantity: qty,   // 🔥 THIS IS IMPORTANT
-                  stock: product.quantity   // 🔥 SAVE STOCK
-                }))}
+                onClick={() => {
+
+                  // ==========================================
+                  // 🛒 ADD PRODUCT TO CART
+                  // ==========================================
+                  dispatch(addToCart({
+                    ...product,
+
+                    // quantity selected by user
+                    quantity: qty,
+
+                    // actual stock quantity
+                    stock: product.quantity
+                  }));
+
+
+                  // ==========================================
+                  // ✅ SUCCESS TOAST
+                  // ==========================================
+                  toast.success(`${product.name} added to cart`);
+                }}
               >
-                <i className="bi bi-cart me-1"></i> Add to Cart
+                <i className="bi bi-cart me-1"></i>
+                Add to Cart
               </button>
+          
 
 
               {/* DETAILS */}

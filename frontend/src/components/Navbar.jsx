@@ -113,17 +113,19 @@ const Navbar = () => {
                 {/* only visible admin  */}
                 {user?.role === "admin" && (
 
-                  <Link to="/admin" >
-                    <a className="nav-link text-white" style={{
-                      textDecoration: 'none', // Removes the underline
-                      color: 'inherit' // Inherits color from parent, or set a specific color like 'black'
-                    }} >
-                      Admin Panel
-                    </a>
-
+                  <Link
+                    to="/admin"
+                    className="nav-link text-white"
+                    style={{
+                      textDecoration: "none",
+                      color: "inherit"
+                    }}
+                  >
+                    Admin Panel
                   </Link>
                 )}
               </li>
+            
               <li className="nav-item me-3 border-bottom responsive-border py-2 products">
                 <a href="#products" className="nav-link text-white">
                   Products

@@ -15,6 +15,10 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import Orders from "./pages/Orders";
 import OrderDetails from "./pages/Orderdetails";
+import NotFound from "./pages/NotFound";
+
+// it is used to enable smooth scrolling to sections of the page when navigating using React Router. For example, if you have links that point to sections like #contact or #footer, this component will ensure that the page scrolls smoothly to those sections when the URL changes.
+import ScrollToHash from "./components/ScrollToHash";
 
 // ADMIN PAGES
 import AdminLayout from "./admin/AdminLayout";
@@ -48,7 +52,7 @@ function App() {
   // On app load, check if user is already logged in (e.g. has valid token)
   useEffect(() => {
     // console.log("app render...");
-    dispatch(loadUser());
+    dispatch(loadUser());// This will check if user has valid token and load user data into Redux store. It also handles token expiry and auto logout. We dispatch it here so that it runs once when app loads.
   }, [dispatch]);
 
   return (
@@ -56,6 +60,10 @@ function App() {
       <ToastContainer position="top-right" autoClose={3000} />
       {/* <h1>Welcome to MobileMart 🛒</h1> */}
       <BrowserRouter>
+
+      {/* it is used to enable smooth scrolling to sections of the page when navigating using React Router. For example, if you have links that point to sections like #contact or #footer, this component will ensure that the page scrolls smoothly to those sections when the URL changes. */}
+        <ScrollToHash />
+        
         <Routes>
           {/* 🏠 Home page */}
           <Route path='/' element={<Home />} />
@@ -66,7 +74,8 @@ function App() {
           <Route path="/search" element={<SearchProducts />} />
 
           {/* 🚫 Catch-all route (404 page) */}
-          <Route path="*" element={<h2 className="text-center mt-5 text-danger">404 - Page Not Found</h2>} />
+          {/* <Route path="*" element={<h2 className="text-center mt-5 text-danger">404 - Page Not Found</h2>} /> */}
+          <Route path="*" element={<NotFound />} />
 
           {/* 🔐 Login page */}
           <Route path="/login" element={<Login />} />

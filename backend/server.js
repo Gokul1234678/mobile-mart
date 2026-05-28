@@ -211,7 +211,8 @@ const sendEmail = async (options) => {
   // You must define SMTP_HOST, SMTP_PORT, SMTP_EMAIL, SMTP_PASSWORD in .env file.
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,     // e.g., smtp.gmail.com
-    port: process.env.SMTP_PORT,     // e.g., 587 or 465
+    port: process.env.SMTP_PORT,     // e.g., 587 or 465 it is used for secure connection
+    secure: false, // false for 587, true for 465 it is used for secure connection
     auth: {
       user: process.env.SMTP_EMAIL,  // your email address
       pass: process.env.SMTP_PASSWORD // your SMTP or App password
@@ -330,8 +331,8 @@ MobileMart Team
     // ------------------------------------------------------------
     return res.status(200).json({
       success: true,
-      message: "Password reset link sent to email!",
-      resetUrl  // 🔥 For testing only — remove in production
+      message: "Password reset link sent to email!"
+      // resetUrl   🔥 For testing only — remove in production
     });
 
 
@@ -906,6 +907,58 @@ app.get("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) =
 
 });
 
+
+// ✅ DELETE MY ACCOUNT (🔐 LOGGED-IN USER ONLY)
+app.delete("/api/me/delete",isAuthenticatedUser,async (req, res) => {
+// ======================================================
+// Purpose:
+// Allows logged-in user to permanently
+// delete their own account
+//
+// Features:
+// ✔️ authenticated users only
+// ✔️ deletes current logged-in user
+// ✔️ clears auth cookie
+// ✔️ logs user out automatically
+// ======================================================
+    try {
+
+      // 1️⃣ Find and delete logged-in user
+      const user = await userModel.findByIdAndDelete(
+        req.user._id // how do we get req.user._id? → isAuthenticatedUser middleware sets req.user based on the token, so we know which user is logged in.
+      );
+
+      // ❌ User not found
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+
+      // 2️⃣ Clear authentication cookie
+      // By setting the token cookie to null and expiring it immediately, we effectively log the user out and remove their authentication from the browser.
+      res.cookie("token", null, {
+        expires: new Date(Date.now()),
+        httpOnly: true
+      });
+
+      // ✅ Success response
+      res.status(200).json({
+        success: true,
+        message: "Account deleted successfully"
+      });
+
+    } catch (error) {
+      // ❌ Server error
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+
+    }
+  }
+);
 
 // ✅ UPDATE USER ROLE (🔐 ADMIN ONLY)
 app.put("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) => {
@@ -2718,13 +2771,22 @@ app.get("/api/admin/orders", isAuthenticatedUser, isAdmin, async (req, res) => {
     // ------------------------------------------------------------
     const orders = await orderModel
       .find()
-      .populate("user", "name email")
+      .populate("user", "name email")// fetches user details for each order using the user ObjectId reference and only returns the name and email fields of the user document
       .sort({ createdAt: -1 }); // latest orders first
 
+    // ======================================================
+    // 💰 CALCULATE TOTAL REVENUE
+    // ======================================================
+    // Only delivered orders count as completed revenue
     let totalAmount = 0;
-    orders.forEach((i) => {
-      totalAmount = totalAmount + i.totalPrice
-    })
+    orders.forEach((order) => {
+
+      // Add only delivered order amounts
+      if (order.orderStatus === "delivered") {
+        totalAmount += order.totalPrice;
+      }
+
+    });
     // ------------------------------------------------------------
     // 2️⃣ Success response
     // ------------------------------------------------------------
@@ -2937,12 +2999,32 @@ app.get("/api/admin/dashboard", isAuthenticatedUser, isAdmin, async (req, res) =
 
     const totalUsers = await userModel.countDocuments();
 
-    // 💰 Calculate total revenue
+    // 📦 FETCH ALL ORDERS
+    // 💰 Calculate total revenue 
     const orders = await orderModel.find();
-    const totalRevenue = orders.reduce(
-      (acc, order) => acc + order.totalPrice,
-      0
-    );
+    // ======================================================
+    // 💰 CALCULATE REVENUE (DELIVERED ORDERS ONLY)
+    // ======================================================
+    // Only delivered orders count as completed revenue
+
+    const totalRevenue = orders.reduce((acc, order) => {
+
+      // Add revenue ONLY if order delivered
+      if (order.orderStatus === "delivered") {
+        return acc + order.totalPrice;
+      }
+
+      return acc;
+
+    }, 0);
+
+
+    // ======================================================
+    // ❌ CANCELLED ORDERS COUNT
+    // ======================================================
+    const cancelledOrders = orders.filter(
+      order => order.orderStatus === "cancelled"
+    ).length;
 
     // ❌ Out of stock products
     const outOfStock = await productModel.countDocuments({
@@ -2955,7 +3037,8 @@ app.get("/api/admin/dashboard", isAuthenticatedUser, isAdmin, async (req, res) =
       totalOrders,
       totalUsers,
       totalRevenue,
-      outOfStock
+      outOfStock,
+      cancelledOrders
     });
 
   } catch (error) {

@@ -3,7 +3,7 @@ import { logoutUser } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import logo from "../assets/img/icons/logo.png";
-
+import { Link } from "react-router-dom";
 // =============================================
 // Self-contained navbar styles
 // White bar with orange/violet accent theme
@@ -275,8 +275,9 @@ const AdminNavbar = ({ onMenuToggle }) => {
           </button>
 
           {/* App logo */}
+          <Link to="/">
           <img src={logo} alt="Mobile Mart" className="admin-navbar-logo" />
-
+          </Link>
           {/* Page label */}
           <h5 className="admin-navbar-title">Admin</h5>
 
@@ -306,7 +307,7 @@ const AdminNavbar = ({ onMenuToggle }) => {
 
           {/* Logout button */}
           <button className="admin-logout-btn" onClick={logoutHandler}>
-            <span>⏻</span>
+            <span>➜]</span>
             Logout
           </button>
 

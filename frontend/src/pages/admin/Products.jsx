@@ -61,6 +61,8 @@ const Products = () => {
   // GET /api/products — loads all products on mount
   // ==========================================
   useEffect(() => {
+        // Set page title on mount
+    document.title = "Products | Mobile Mart";
     const fetchProducts = async () => {
       try {
         const { data } = await axiosInstance.get("/api/products", {
@@ -125,12 +127,7 @@ const Products = () => {
     }
   };
 
-  // ==========================================
-  // LOADING STATE
-  // ==========================================
-  if (loading) {
-    return <VideoLoader />;
-  }
+
 
   // ==========================================
   // RENDER
@@ -140,175 +137,188 @@ const Products = () => {
 
       <div className="prod-page">
 
-        {/* ==========================================
+
+        {/* Show small inline loader while fetching */}
+        {loading ? (
+          // <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+          <VideoLoader loaderName="loading1" content />
+          // </div>
+        ) : (
+
+          <>
+
+
+
+
+            {/* ==========================================
             PAGE HEADER — title + Add Product button
         ========================================== */}
-        <div className="prod-header">
-          <h2 className="prod-title">Products</h2>
+            <div className="prod-header">
+              <h2 className="prod-title">Products</h2>
 
-          {/* Add Product — green button (no handler yet, add onClick later) */}
-          <button className="prod-add-btn" onClick={() => navigate("/admin/add-product")} >
-            <span>＋</span>
-            Add Product
-          </button>
-        </div>
+              {/* Add Product — green button (no handler yet, add onClick later) */}
+              <button className="prod-add-btn" onClick={() => navigate("/admin/add-product")} >
+                <span>＋</span>
+                Add Product
+              </button>
+            </div>
 
-        {/* ==========================================
+            {/* ==========================================
             SEARCH BAR
             Resets to page 1 on every keystroke
         ========================================== */}
-        <div className="prod-search-wrap">
-          <span className="prod-search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="prod-search-input"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setActivePage(1); // reset to first page when search changes
-            }}
-          />
-        </div>
+            <div className="prod-search-wrap">
+              <span className="prod-search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="prod-search-input"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setActivePage(1); // reset to first page when search changes
+                }}
+              />
+            </div>
 
-        {/* Result count — shows how many products match the search */}
-        <div className="prod-result-count">
-          Showing <strong>{currentProducts.length}</strong> of{" "}
-          <strong>{filteredProducts.length}</strong> products
-        </div>
+            {/* Result count — shows how many products match the search */}
+            <div className="prod-result-count">
+              Showing <strong>{currentProducts.length}</strong> of{" "}
+              <strong>{filteredProducts.length}</strong> products
+            </div>
 
-        {/* ==========================================
+            {/* ==========================================
             PRODUCTS TABLE — wrapped in white card
         ========================================== */}
-        <div className="prod-table-card">
-          <table className="prod-table">
+            <div className="prod-table-card">
+              <table className="prod-table">
 
-            {/* Table header — navy background */}
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {/* ---- Empty State ---- */}
-              {currentProducts.length === 0 ? (
-                <tr>
-                  <td colSpan="7">
-                    <div className="prod-empty">
-                      <div className="prod-empty-icon">📦</div>
-                      <p>No products found</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                currentProducts.map((product, index) => (
-                  <tr key={product._id}>
-
-                    {/* ---- Row Index ---- */}
-                    <td>
-                      <span className="prod-row-index">
-                        {/* Correct index accounting for current page offset */}
-                        {(activePage - 1) * itemsPerPage + index + 1}
-                      </span>
-                    </td>
-
-                    {/* ---- Product Image ---- */}
-                    <td>
-                      <img
-                        src={product.images?.[0]}
-                        alt={product.name}
-                        className="prod-img"
-                      />
-                    </td>
-
-                    {/* ---- Product Name ---- */}
-                    <td>
-                      <span className="prod-name">{product.name}</span>
-                    </td>
-
-                    {/* ---- Offer Price ---- */}
-                    <td>
-                      <span className="prod-price">₹{product.offerPrice}</span>
-                    </td>
-
-                    {/* ---- Stock Quantity ---- */}
-                    <td>
-                      <span className="prod-stock">{product.quantity}</span>
-                    </td>
-
-                    {/* ---- Stock Status Badge ---- */}
-                    <td>
-                      {product.quantity > 0 ? (
-                        /* Green badge — product is available */
-                        <span className="prod-badge in-stock">
-                          <span className="prod-badge-dot" />
-                          In Stock
-                        </span>
-                      ) : (
-                        /* Red badge — product unavailable */
-                        <span className="prod-badge out-stock">
-                          <span className="prod-badge-dot" />
-                          Out of Stock
-                        </span>
-                      )}
-                    </td>
-
-                    {/* ---- Action Buttons ---- */}
-                    <td>
-                      <div className="prod-actions">
-
-                        {/* Edit button — blue, pencil icon */}
-                        <button onClick={() => navigate(`/admin/product/${ product._id }/edit`)} className="prod-action-btn edit">
-                          <IconEdit />
-                          Edit
-                        </button>
-                       
-                        {/* Delete button — red, trash icon, calls deleteProduct */}
-                        <button
-                          className="prod-action-btn delete"
-                          onClick={() => deleteProduct(product._id)}
-                        >
-                          <IconDelete />
-                          Delete
-                        </button>
-
-                      </div>
-                    </td>
-
+                {/* Table header — navy background */}
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))
-              )}
-            </tbody>
+                </thead>
 
-          </table>
-        </div>
+                <tbody>
+                  {/* ---- Empty State ---- */}
+                  {currentProducts.length === 0 ? (
+                    <tr>
+                      <td colSpan="7">
+                        <div className="prod-empty">
+                          <div className="prod-empty-icon">📦</div>
+                          <p>No products found</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    currentProducts.map((product, index) => (
+                      <tr key={product._id}>
 
-        {/* ==========================================
+                        {/* ---- Row Index ---- */}
+                        <td>
+                          <span className="prod-row-index">
+                            {/* Correct index accounting for current page offset */}
+                            {(activePage - 1) * itemsPerPage + index + 1}
+                          </span>
+                        </td>
+
+                        {/* ---- Product Image ---- */}
+                        <td>
+                          <img
+                            src={product.images?.[0]}
+                            alt={product.name}
+                            className="prod-img"
+                          />
+                        </td>
+
+                        {/* ---- Product Name ---- */}
+                        <td>
+                          <span className="prod-name">{product.name}</span>
+                        </td>
+
+                        {/* ---- Offer Price ---- */}
+                        <td>
+                          <span className="prod-price">₹{product.offerPrice}</span>
+                        </td>
+
+                        {/* ---- Stock Quantity ---- */}
+                        <td>
+                          <span className="prod-stock">{product.quantity}</span>
+                        </td>
+
+                        {/* ---- Stock Status Badge ---- */}
+                        <td>
+                          {product.quantity > 0 ? (
+                            /* Green badge — product is available */
+                            <span className="prod-badge in-stock">
+                              <span className="prod-badge-dot" />
+                              In Stock
+                            </span>
+                          ) : (
+                            /* Red badge — product unavailable */
+                            <span className="prod-badge out-stock">
+                              <span className="prod-badge-dot" />
+                              Out of Stock
+                            </span>
+                          )}
+                        </td>
+
+                        {/* ---- Action Buttons ---- */}
+                        <td>
+                          <div className="prod-actions">
+
+                            {/* Edit button — blue, pencil icon */}
+                            <button onClick={() => navigate(`/admin/product/${product._id}/edit`)} className="prod-action-btn edit">
+                              <IconEdit />
+                              Edit
+                            </button>
+
+                            {/* Delete button — red, trash icon, calls deleteProduct */}
+                            <button
+                              className="prod-action-btn delete"
+                              onClick={() => deleteProduct(product._id)}
+                            >
+                              <IconDelete />
+                              Delete
+                            </button>
+
+                          </div>
+                        </td>
+
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+
+              </table>
+            </div>
+
+            {/* ==========================================
             PAGINATION
             react-js-pagination — styled with orange active page
         ========================================== */}
-        <div className="prod-pagination">
-          <Pagination
-            activePage={activePage}
-            itemsCountPerPage={itemsPerPage}
-            totalItemsCount={filteredProducts.length}
-            onChange={(pageNumber) => setActivePage(pageNumber)} // update page on click
-            itemClass="page-item"
-            linkClass="page-link"
-            prevPageText="← Prev"
-            nextPageText="Next →"
-            firstPageText="First"
-            lastPageText="Last"
-          />
-        </div>
-
+            <div className="prod-pagination">
+              <Pagination
+                activePage={activePage}
+                itemsCountPerPage={itemsPerPage}
+                totalItemsCount={filteredProducts.length}
+                onChange={(pageNumber) => setActivePage(pageNumber)} // update page on click
+                itemClass="page-item"
+                linkClass="page-link"
+                prevPageText="← Prev"
+                nextPageText="Next →"
+                firstPageText="First"
+                lastPageText="Last"
+              />
+            </div>
+          </>)}
       </div>
     </>
   );

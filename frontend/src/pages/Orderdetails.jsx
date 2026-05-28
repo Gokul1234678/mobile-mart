@@ -2,6 +2,10 @@ import React, { useEffect, useState, useRef, useCallback } from "react"; // core
 import { useParams, useNavigate } from "react-router-dom"; // get :id from URL, navigate between pages
 import axiosInstance from "../axios_instance"; // pre-configured axios with base URL
 import { toast } from "react-toastify"; // show success/error notifications
+// This component helps us set page title and meta description dynamically
+import SEO from "../components/SEO";
+
+import VideoLoader from "../components/VideoLoader";
 
 // =============================================
 // Self-contained styles — no external CSS file
@@ -690,9 +694,9 @@ const formatDate = (dateStr) => {
 // Map orderStatus → CSS class
 const getStatusCls = (status) => {
   const s = status?.toLowerCase();        // normalize to lowercase for safe comparison
-  if (s === "delivered")  return "delivered";
+  if (s === "delivered") return "delivered";
   if (s === "processing") return "processing";
-  if (s === "cancelled")  return "cancelled";
+  if (s === "cancelled") return "cancelled";
   return "pending";                       // default fallback
 };
 
@@ -702,10 +706,10 @@ const getStatusCls = (status) => {
 // and which steps are "done" / "active" / pending
 // =============================================
 const TIMELINE_STEPS = [
-  { key: "placed",     label: "Order\nPlaced"  },
-  { key: "processing", label: "Processing"     },
-  { key: "shipped",    label: "Shipped"        },
-  { key: "delivered",  label: "Delivered"      },
+  { key: "placed", label: "Order\nPlaced" },
+  { key: "processing", label: "Processing" },
+  { key: "shipped", label: "Shipped" },
+  { key: "delivered", label: "Delivered" },
 ];
 
 // Returns step state: "done" | "active" | "cancelled" | ""
@@ -716,8 +720,8 @@ const getStepState = (stepKey, orderStatus) => {
   }
   const order = ["placed", "processing", "shipped", "delivered"]; // step order
   const currentIdx = order.indexOf(orderStatus?.toLowerCase()) ?? 0; // index of current status
-  const stepIdx    = order.indexOf(stepKey);                         // index of this step
-  if (stepIdx < currentIdx)  return "done";    // step is behind current → completed
+  const stepIdx = order.indexOf(stepKey);                         // index of this step
+  if (stepIdx < currentIdx) return "done";    // step is behind current → completed
   if (stepIdx === currentIdx) return "active"; // step matches current → in progress
   return "";                                   // step is ahead → not reached yet
 };
@@ -732,31 +736,31 @@ const getProgressWidth = (orderStatus) => {
 // =============================================
 // SVG ICON COMPONENTS — inline, no library needed
 // =============================================
-const IconCheck    = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
-const IconX        = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
-const IconClock    = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-const IconTruck    = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
-const IconPackage  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
-const IconMap      = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
-const IconReceipt  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>;
-const IconBack     = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
-const IconCancel   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>;
+const IconCheck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>;
+const IconX = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
+const IconClock = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>;
+const IconTruck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>;
+const IconPackage = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21" /><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>;
+const IconMap = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>;
+const IconReceipt = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>;
+const IconBack = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>;
+const IconCancel = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>;
 
 // =============================================
 // MAIN COMPONENT
 // =============================================
 const OrderDetails = () => {
-  const { id }     = useParams();   // order ID from URL → /orders/:id
-  const navigate   = useNavigate();
+  const { id } = useParams();   // order ID from URL → /orders/:id
+  const navigate = useNavigate();
 
   // ==========================================
   // LOCAL STATE
   // ==========================================
-  const [order,       setOrder]       = useState(null);   // full order object
-  const [loading,     setLoading]     = useState(true);   // page loading state
-  const [error,       setError]       = useState(null);   // fetch error message
-  const [showModal,   setShowModal]   = useState(false);  // confirm cancel modal toggle
-  const [cancelling,  setCancelling]  = useState(false);  // cancel API in progress
+  const [order, setOrder] = useState(null);   // full order object
+  const [loading, setLoading] = useState(true);   // page loading state
+  const [error, setError] = useState(null);   // fetch error message
+  const [showModal, setShowModal] = useState(false);  // confirm cancel modal toggle
+  const [cancelling, setCancelling] = useState(false);  // cancel API in progress
 
   // ==========================================
   // FETCH ORDER DETAILS ON MOUNT
@@ -843,16 +847,16 @@ const OrderDetails = () => {
   // ==========================================
   // DERIVED VALUES (only when order is loaded)
   // ==========================================
-  const statusCls      = order ? getStatusCls(order.orderStatus) : "";           // CSS class for badge color
-  const canCancel      = order && !["cancelled", "delivered"].includes(order.orderStatus?.toLowerCase()); // hide cancel btn if already done
-  const progressWidth  = order ? getProgressWidth(order.orderStatus) : "0%";       // timeline bar target width
+  const statusCls = order ? getStatusCls(order.orderStatus) : "";           // CSS class for badge color
+  const canCancel = order && !["cancelled", "delivered"].includes(order.orderStatus?.toLowerCase()); // hide cancel btn if already done
+  const progressWidth = order ? getProgressWidth(order.orderStatus) : "0%";       // timeline bar target width
 
   // Animated price values — all count up from 0 when order loads
-  const animItemsPrice    = useCountUp(order?.itemsPrice,     !!order);
-  const animTaxPrice      = useCountUp(order?.taxPrice,       !!order);
-  const animDelivery      = useCountUp(order?.deliveryCharge, !!order);
-  const animPlatformFee   = useCountUp(order?.platformFee,    !!order);
-  const animTotalPrice    = useCountUp(order?.totalPrice,     !!order);
+  const animItemsPrice = useCountUp(order?.itemsPrice, !!order);
+  const animTaxPrice = useCountUp(order?.taxPrice, !!order);
+  const animDelivery = useCountUp(order?.deliveryCharge, !!order);
+  const animPlatformFee = useCountUp(order?.platformFee, !!order);
+  const animTotalPrice = useCountUp(order?.totalPrice, !!order);
 
   // ==========================================
   // EFFECT: Trigger timeline bar draw after mount
@@ -875,13 +879,15 @@ const OrderDetails = () => {
   if (loading) {
     return (
       <>
-        <style>{styles}</style>
+        {/* <style>{styles}</style>
         <div className="od-page">
           <div className="od-loader">
             <div className="od-spinner" />
             <p>Loading order details...</p>
           </div>
-        </div>
+        </div> */}
+        <VideoLoader loaderName="loading1" fullscreen />
+
       </>
     );
   }
@@ -892,6 +898,7 @@ const OrderDetails = () => {
   if (error || !order) {
     return (
       <>
+
         <style>{styles}</style>
         <div className="od-page">
           <div className="od-inner">
@@ -914,250 +921,258 @@ const OrderDetails = () => {
   // ==========================================
   return (
     <>
+      <SEO
+        title="Orders Details | Mobile Mart"
+        description="Track your Mobile Mart orders, view order details, payment status, and delivery updates in one place."
+      />
       <style>{styles}</style>
-
-      {/* ==========================================
+     
+        {/* ==========================================
           CONFIRM CANCEL MODAL
           Shown when user clicks "Cancel Order"
       ========================================== */}
-      {showModal && (
-        <div className="od-modal-overlay" onClick={() => setShowModal(false)}> {/* click outside modal to close */}
-          <div className="od-modal" onClick={(e) => e.stopPropagation()}> {/* stop click from bubbling to overlay */}
-            <div className="od-modal-icon">🚫</div>
-            <h3>Cancel this order?</h3>
-            <p>
-              This will cancel your order and restore product stock.
-              This action cannot be undone.
-            </p>
-            <div className="od-modal-actions">
-              {/* Keep order — dismiss modal */}
-              <button className="od-modal-keep" onClick={() => setShowModal(false)}>
-                Keep Order
-              </button>
-              {/* Confirm cancel — calls API */}
-              <button
-                className="od-modal-confirm"
-                onClick={handleCancelOrder}
-                disabled={cancelling}
-              >
-                {cancelling ? "Cancelling..." : "Yes, Cancel"}
-              </button>
+        {showModal && (
+          <div className="od-modal-overlay" onClick={() => setShowModal(false)}> {/* click outside modal to close */}
+            <div className="od-modal" onClick={(e) => e.stopPropagation()}> {/* stop click from bubbling to overlay */}
+              <div className="od-modal-icon">🚫</div>
+              <h3>Cancel this order?</h3>
+              <p>
+                This will cancel your order and restore product stock.
+                This action cannot be undone.
+              </p>
+              <div className="od-modal-actions">
+                {/* Keep order — dismiss modal */}
+                <button className="od-modal-keep" onClick={() => setShowModal(false)}>
+                  Keep Order
+                </button>
+                {/* Confirm cancel — calls API */}
+                <button
+                  className="od-modal-confirm"
+                  onClick={handleCancelOrder}
+                  disabled={cancelling}
+                >
+                  {cancelling ? "Cancelling..." : "Yes, Cancel"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="od-page">
-        <div className="od-inner">
+        <div className="od-page">
+           {/* Show small inline loader while fetching */}
+      
+          <div className="od-inner">
 
-          {/* ==========================================
+            {/* ==========================================
               PAGE HEADER — Back button + title
           ========================================== */}
-          <div className="od-header">
-            <button className="od-back-btn" onClick={() => navigate("/orders")}>
-              <IconBack /> Orders
-            </button>
-            <h1 className="od-title">Order Details</h1>
-          </div>
+            <div className="od-header">
+              <button className="od-back-btn" onClick={() => navigate("/orders")}>
+                <IconBack /> Orders
+              </button>
+              <h1 className="od-title">Order Details</h1>
+            </div>
 
-          <div className="od-grid">
+            <div className="od-grid">
 
-            {/* ==========================================
+              {/* ==========================================
                 LEFT COLUMN
             ========================================== */}
-            <div>
+              <div>
 
-              {/* ---- Card 1: Order Overview ---- */}
-              <div className="od-card" style={{ animationDelay: "0.05s" }}>
-                {/* Order ID + status in one row */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px", marginBottom: "18px" }}>
-                  <div>
-                    <div className="od-meta-label">Order ID</div>
-                    <div className="od-meta-value violet" style={{ fontSize: "0.88rem", marginTop: "3px" }}>{order._id}</div>
-                  </div>
-                  {/* Color-coded status badge */}
-                  <span className={`od-status-badge ${statusCls}`}>
-                    <span className="od-status-dot" />
-                    {order.orderStatus?.charAt(0).toUpperCase() + order.orderStatus?.slice(1) || "Pending"}
-                  </span>
-                </div>
-
-                {/* Meta: date, payment method, payment status */}
-                <div className="od-meta-strip">
-                  <div className="od-meta-item">
-                    <span className="od-meta-label">Order Date</span>
-                    <span className="od-meta-value">{formatDate(order.createdAt)}</span>
-                  </div>
-                  <div className="od-meta-item">
-                    <span className="od-meta-label">Payment</span>
-                    <span className={`od-meta-value ${order.paymentMethod === "COD" ? "yellow" : "green"}`}>
-                      {order.paymentMethod === "COD" ? "Cash on Delivery" : "Online"}
+                {/* ---- Card 1: Order Overview ---- */}
+                <div className="od-card" style={{ animationDelay: "0.05s" }}>
+                  {/* Order ID + status in one row */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px", marginBottom: "18px" }}>
+                    <div>
+                      <div className="od-meta-label">Order ID</div>
+                      <div className="od-meta-value violet" style={{ fontSize: "0.88rem", marginTop: "3px" }}>{order._id}</div>
+                    </div>
+                    {/* Color-coded status badge */}
+                    <span className={`od-status-badge ${statusCls}`}>
+                      <span className="od-status-dot" />
+                      {order.orderStatus?.charAt(0).toUpperCase() + order.orderStatus?.slice(1) || "Pending"}
                     </span>
                   </div>
-                  <div className="od-meta-item">
-                    <span className="od-meta-label">Payment Status</span>
-                    <span className={`od-meta-value ${order.paymentStatus === "paid" ? "green" : order.paymentStatus === "failed" ? "red" : "yellow"}`}>
-                      {/* Capitalize first letter */}
-                      {order.paymentStatus
-                        ? order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)
-                        : "Pending"}
-                    </span>
-                  </div>
-                </div>
 
-                {/* ---- ORDER TIMELINE ---- */}
-                <div style={{ marginTop: "22px" }}>
-                  <div className="od-meta-label" style={{ marginBottom: "10px" }}>Order Progress</div>
-                  <div className="od-timeline">
-                    {/* Background line */}
-                    {/* Filled progress line — draws left→right on mount via ref + CSS class */}
-                    <div className="od-timeline-progress" ref={progressRef} />
-
-                    {/* Loop through 4 steps: Placed, Processing, Shipped, Delivered */}
-                    {TIMELINE_STEPS.map((step) => {
-                      const state = getStepState(step.key, order.orderStatus); // "done" | "active" | "cancelled" | ""
-                      return (
-                        <div key={step.key} className="od-timeline-step">
-                          {/* Dot icon — changes based on step state */}
-                          <div className={`od-timeline-dot ${state}`}>
-                            {state === "done"      && <IconCheck />}
-                            {state === "active"    && <IconClock />}
-                            {state === "cancelled" && <IconX />}
-                          </div>
-                          {/* Step label — colored by state */}
-                          <div className={`od-timeline-label ${state}`}>
-                            {step.label}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* ---- Card 2: Ordered Items ---- */}
-              <div className="od-card" style={{ animationDelay: "0.1s" }}>
-                <div className="od-card-title">
-                  <IconPackage />
-                  Items Ordered ({order.orderItems?.length})
-                </div>
-
-                {/* One row per product */}
-                {order.orderItems?.map((item, i) => (
-                  <div key={i} className="od-item-row">
-                    {/* Product image */}
-                    <img
-                      src={item.image || "/default-image.png"}
-                      alt={item.name}
-                      className="od-item-img"
-                    />
-                    <div className="od-item-info">
-                      <div className="od-item-name">{item.name}</div>
-                      <div className="od-item-qty">Qty: {item.quantity}</div>
+                  {/* Meta: date, payment method, payment status */}
+                  <div className="od-meta-strip">
+                    <div className="od-meta-item">
+                      <span className="od-meta-label">Order Date</span>
+                      <span className="od-meta-value">{formatDate(order.createdAt)}</span>
                     </div>
-                    {/* Line total = unit price × qty ordered */}
-                    <div className="od-item-price">
-                      ₹{(item.price * item.quantity).toFixed(2)}
+                    <div className="od-meta-item">
+                      <span className="od-meta-label">Payment</span>
+                      <span className={`od-meta-value ${order.paymentMethod === "COD" ? "yellow" : "green"}`}>
+                        {order.paymentMethod === "COD" ? "Cash on Delivery" : "Online"}
+                      </span>
+                    </div>
+                    <div className="od-meta-item">
+                      <span className="od-meta-label">Payment Status</span>
+                      <span className={`od-meta-value ${order.paymentStatus === "paid" ? "green" : order.paymentStatus === "failed" ? "red" : "yellow"}`}>
+                        {/* Capitalize first letter */}
+                        {order.paymentStatus
+                          ? order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)
+                          : "Pending"}
+                      </span>
                     </div>
                   </div>
-                ))}
+
+                  {/* ---- ORDER TIMELINE ---- */}
+                  <div style={{ marginTop: "22px" }}>
+                    <div className="od-meta-label" style={{ marginBottom: "10px" }}>Order Progress</div>
+                    <div className="od-timeline">
+                      {/* Background line */}
+                      {/* Filled progress line — draws left→right on mount via ref + CSS class */}
+                      <div className="od-timeline-progress" ref={progressRef} />
+
+                      {/* Loop through 4 steps: Placed, Processing, Shipped, Delivered */}
+                      {TIMELINE_STEPS.map((step) => {
+                        const state = getStepState(step.key, order.orderStatus); // "done" | "active" | "cancelled" | ""
+                        return (
+                          <div key={step.key} className="od-timeline-step">
+                            {/* Dot icon — changes based on step state */}
+                            <div className={`od-timeline-dot ${state}`}>
+                              {state === "done" && <IconCheck />}
+                              {state === "active" && <IconClock />}
+                              {state === "cancelled" && <IconX />}
+                            </div>
+                            {/* Step label — colored by state */}
+                            <div className={`od-timeline-label ${state}`}>
+                              {step.label}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ---- Card 2: Ordered Items ---- */}
+                <div className="od-card" style={{ animationDelay: "0.1s" }}>
+                  <div className="od-card-title">
+                    <IconPackage />
+                    Items Ordered ({order.orderItems?.length})
+                  </div>
+
+                  {/* One row per product */}
+                  {order.orderItems?.map((item, i) => (
+                    <div key={i} className="od-item-row">
+                      {/* Product image */}
+                      <img
+                        src={item.image || "/default-image.png"}
+                        alt={item.name}
+                        className="od-item-img"
+                      />
+                      <div className="od-item-info">
+                        <div className="od-item-name">{item.name}</div>
+                        <div className="od-item-qty">Qty: {item.quantity}</div>
+                      </div>
+                      {/* Line total = unit price × qty ordered */}
+                      <div className="od-item-price">
+                        ₹{(item.price * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ---- Card 3: Shipping Address ---- */}
+                <div className="od-card" style={{ animationDelay: "0.15s" }}>
+                  <div className="od-card-title">
+                    <IconMap />
+                    Shipping Address
+                  </div>
+                  <div className="od-address-block">
+                    <p><strong>Address:</strong> {order.shippingAddress?.address}</p>
+                    <p><strong>City:</strong> {order.shippingAddress?.city}</p>
+                    <p><strong>State:</strong> {order.shippingAddress?.state}</p>
+                    <p><strong>Pincode:</strong> {order.shippingAddress?.pincode}</p>
+                  </div>
+                </div>
+
               </div>
 
-              {/* ---- Card 3: Shipping Address ---- */}
-              <div className="od-card" style={{ animationDelay: "0.15s" }}>
-                <div className="od-card-title">
-                  <IconMap />
-                  Shipping Address
-                </div>
-                <div className="od-address-block">
-                  <p><strong>Address:</strong> {order.shippingAddress?.address}</p>
-                  <p><strong>City:</strong> {order.shippingAddress?.city}</p>
-                  <p><strong>State:</strong> {order.shippingAddress?.state}</p>
-                  <p><strong>Pincode:</strong> {order.shippingAddress?.pincode}</p>
-                </div>
-              </div>
-
-            </div>
-
-            {/* ==========================================
+              {/* ==========================================
                 RIGHT COLUMN — Price Summary + Cancel
             ========================================== */}
-            <div className="od-right">
-              <div className="od-card">
-                <div className="od-card-title">
-                  <IconReceipt />
-                  Price Summary
-                </div>
-
-                {/* Items subtotal */}
-                <div className="od-price-row">
-                  <span>Items Price</span>
-                  <span>₹{animItemsPrice}</span>
-                </div>
-
-                {/* GST */}
-                <div className="od-price-row">
-                  <span>GST (5%)</span>
-                  <span>₹{animTaxPrice}</span>
-                </div>
-
-                {/* Delivery charge */}
-                <div className="od-price-row">
-                  <span>Delivery</span>
-                  <span>₹{animDelivery}</span>
-                </div>
-
-                {/* Platform fee */}
-                <div className="od-price-row">
-                  <span>Platform Fee</span>
-                  <span>₹{animPlatformFee}</span>
-                </div>
-
-                <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "12px 0" }} />
-
-                {/* Grand total */}
-                <div className="od-price-row total">
-                  <span>Total</span>
-                  <span>₹{animTotalPrice}</span>
-                </div>
-
-                {/* ---- Cancel Order Button ----
-                    Only shown if order is not delivered or already cancelled */}
-                {/* Only render cancel button if order is still cancellable */}
-                {canCancel && (
-                  <button
-                    className="od-cancel-btn"
-                    onClick={() => setShowModal(true)} // opens confirm modal instead of cancelling directly
-                    disabled={cancelling}              // disable while API call is in progress
-                  >
-                    <IconCancel />
-                    Cancel Order
-                  </button>
-                )}
-
-                {/* Show message if order is already cancelled */}
-                {order.orderStatus?.toLowerCase() === "cancelled" && (
-                  <div style={{
-                    marginTop: "14px",
-                    padding: "10px 14px",
-                    background: "var(--red-light)",
-                    border: "1px solid #ffcdd2",
-                    borderRadius: "var(--radius-sm)",
-                    fontSize: "0.82rem",
-                    color: "var(--red)",
-                    fontWeight: "600",
-                    textAlign: "center"
-                  }}>
-                    🚫 This order has been cancelled
+              <div className="od-right">
+                <div className="od-card">
+                  <div className="od-card-title">
+                    <IconReceipt />
+                    Price Summary
                   </div>
-                )}
 
+                  {/* Items subtotal */}
+                  <div className="od-price-row">
+                    <span>Items Price</span>
+                    <span>₹{animItemsPrice}</span>
+                  </div>
+
+                  {/* GST */}
+                  <div className="od-price-row">
+                    <span>GST (5%)</span>
+                    <span>₹{animTaxPrice}</span>
+                  </div>
+
+                  {/* Delivery charge */}
+                  <div className="od-price-row">
+                    <span>Delivery</span>
+                    <span>₹{animDelivery}</span>
+                  </div>
+
+                  {/* Platform fee */}
+                  <div className="od-price-row">
+                    <span>Platform Fee</span>
+                    <span>₹{animPlatformFee}</span>
+                  </div>
+
+                  <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "12px 0" }} />
+
+                  {/* Grand total */}
+                  <div className="od-price-row total">
+                    <span>Total</span>
+                    <span>₹{animTotalPrice}</span>
+                  </div>
+
+                  {/* ---- Cancel Order Button ----
+                    Only shown if order is not delivered or already cancelled */}
+                  {/* Only render cancel button if order is still cancellable */}
+                  {canCancel && (
+                    <button
+                      className="od-cancel-btn"
+                      onClick={() => setShowModal(true)} // opens confirm modal instead of cancelling directly
+                      disabled={cancelling}              // disable while API call is in progress
+                    >
+                      <IconCancel />
+                      Cancel Order
+                    </button>
+                  )}
+
+                  {/* Show message if order is already cancelled */}
+                  {order.orderStatus?.toLowerCase() === "cancelled" && (
+                    <div style={{
+                      marginTop: "14px",
+                      padding: "10px 14px",
+                      background: "var(--red-light)",
+                      border: "1px solid #ffcdd2",
+                      borderRadius: "var(--radius-sm)",
+                      fontSize: "0.82rem",
+                      color: "var(--red)",
+                      fontWeight: "600",
+                      textAlign: "center"
+                    }}>
+                      🚫 This order has been cancelled
+                    </div>
+                  )}
+
+                </div>
               </div>
-            </div>
 
+            </div>
           </div>
-        </div>
-      </div>
+        
+       </div>
+     
     </>
   );
 };

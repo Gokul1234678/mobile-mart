@@ -61,7 +61,9 @@ const ProductView = () => {
     if (qty > 1) setQty(qty - 1);
   };
 
+  // Show loader while fetching product details
   if (loading) return <VideoLoader loaderName="loading" fullscreen />;
+
 
   if (!product) return <p className="text-center h2">Product not found</p>;
 

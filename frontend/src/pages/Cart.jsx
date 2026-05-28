@@ -11,7 +11,8 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 import "../assets/styles/cart.css";
-
+// This component helps us set page title and meta description dynamically
+import SEO from "../components/SEO";
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -51,6 +52,10 @@ const Cart = () => {
   };
   return (
     <>
+    <SEO
+  title="My Cart | Mobile Mart"
+  description="View and manage products added to your cart, update quantities, and proceed to secure checkout on Mobile Mart."
+/>
       {/* <style>{styles}</style> */}
       <Navbar />
       <div className="cart-root">

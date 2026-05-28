@@ -7,6 +7,9 @@ import "../assets/styles/auth.css";
 
 const ForgotPassword = () => {
 
+  // Set page title on mount
+  document.title = "Forget Password | Mobile Mart";
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,7 +30,12 @@ const ForgotPassword = () => {
         { email }
       );
 
-      toast.success(data.message);
+      // toast.success(data.message);
+      toast.success(
+        "Reset link sent successfully. Please check your email."
+      );
+
+      setEmail("");
 
       // optional redirect
       // setTimeout(() => {

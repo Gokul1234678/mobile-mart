@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../axios_instance";
 import { clearCart } from "../redux/cartSlice";
 import { toast } from "react-toastify";
+import VideoLoader from "../components/VideoLoader";
 
 import logo from "../assets/img/icons/logo.png";
 
@@ -11,7 +12,8 @@ import "../assets/styles/checkout.css";
 
 // Redux action to load full user profile
 import { loadUser } from "../redux/userSlice";
-
+// This component helps us set page title and meta description dynamically
+import SEO from "../components/SEO";
 const Checkout = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -339,15 +341,18 @@ const Checkout = () => {
 // ==========================================
 if (loading) {
   return (
-    <div className="checkout-loader">
-      <div className="spinner"></div>
-      <p>Loading checkout...</p>
-    </div>
+            <VideoLoader loaderName="loading1" fullscreen />
+
   );
 }
 
 return (
   <>
+  
+  <SEO
+  title="Checkout | Mobile Mart"
+  description="Complete your Mobile Mart purchase securely with shipping details, order summary, and Razorpay payment integration."
+/>
 
 
     {/*  Checkout Navbar (Logo Only) */}

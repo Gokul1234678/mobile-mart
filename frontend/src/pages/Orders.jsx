@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../axios_instance";
 import Navbar from "../components/Navbar";
+// This component helps us set page title and meta description dynamically
+import SEO from "../components/SEO";
+
+import VideoLoader from "../components/VideoLoader";
 
 // css for this page
 const styles = `
@@ -484,227 +488,237 @@ const MyOrders = () => {
   // ==========================================
   return (
     <>
+      <SEO
+        title="My Orders | Mobile Mart"
+        description="Track your Mobile Mart orders, view order details, payment status, and delivery updates in one place."
+      />
+
       {/* Inline CSS styles */}
       <style>{styles}</style>
 
-      <Navbar />
-      <div className="orders-page">
-        <div className="orders-inner">
+      {/* Show small inline loader while fetching */}
+      {loading ? (
+        <VideoLoader loaderName="loading1" fullscreen />
+      ) : (<>
+        <Navbar />
+        <div className="orders-page">
+          <div className="orders-inner">
 
-          {/* ========================================== */}
-          {/* 🧾 HEADER */}
-          {/* ========================================== */}
-          <div className="orders-header">
-            <h1 className="orders-title">My Orders</h1>
+            {/* ========================================== */}
+            {/* 🧾 HEADER */}
+            {/* ========================================== */}
+            <div className="orders-header">
+              <h1 className="orders-title">My Orders</h1>
 
-            {/* Show total order count */}
-            {!loading && orders.length > 0 && (
-              <span className="orders-count-badge">
-                {orders.length} {orders.length === 1 ? "order" : "orders"}
-              </span>
-            )}
-          </div>
-
-
-          {/* ========================================== */}
-          {/* 🔄 LOADING STATE */}
-          {/* ========================================== */}
-          {loading && (
-            <div className="orders-loader">
-              <div className="orders-spinner" />
-              <p>Loading your orders...</p>
+              {/* Show total order count */}
+              {!loading && orders.length > 0 && (
+                <span className="orders-count-badge">
+                  {orders.length} {orders.length === 1 ? "order" : "orders"}
+                </span>
+              )}
             </div>
-          )}
 
 
-          {/* ========================================== */}
-          {/* ❌ ERROR STATE */}
-          {/* ========================================== */}
-          {!loading && error && (
-            <div className="orders-empty">
-              <div className="orders-empty-icon">⚠️</div>
-              <h3>Something went wrong</h3>
-              <p>{error}</p>
-
-              {/* Retry button reloads page */}
-              <button
-                className="orders-shop-btn"
-                onClick={() => window.location.reload()}
-              >
-                Retry
-              </button>
-            </div>
-          )}
-
-
-          {/* ========================================== */}
-          {/* 📭 EMPTY STATE */}
-          {/* ========================================== */}
-          {!loading && !error && orders.length === 0 && (
-            <div className="orders-empty">
-              <div className="orders-empty-icon">📦</div>
-              <h3>No orders yet</h3>
-              <p>Looks like you haven't placed any orders yet.</p>
-
-              {/* Navigate to home */}
-              <button
-                className="orders-shop-btn"
-                onClick={() => navigate("/")}
-              >
-                Start Shopping
-              </button>
-            </div>
-          )}
-
-
-          {/* ========================================== */}
-          {/* 📦 ORDERS LIST */}
-          {/* ========================================== */}
-          {!loading && !error && orders.map((order, index) => {
-
-            // Get status config (color + label)
-            const status = getStatusConfig(order.orderStatus);
-
-            return (
-              <div
-                key={order._id}
-                className="order-card"
-
-                // Animation delay for stagger effect
-                style={{ animationDelay: `${index * 0.07}s` }}
-              >
-
-                {/* ========================================== */}
-                {/* 🔝 TOP ROW: ORDER ID + STATUS */}
-                {/* ========================================== */}
-                <div className="order-card-top">
-
-                  <div className="order-id-block">
-                    <div className="order-id-label">Order ID</div>
-                    <div className="order-id-value">{order._id}</div>
-                  </div>
-
-                  {/* Status badge */}
-                  <span className={`status-badge ${status.cls}`}>
-                    <span className="status-dot" />
-                    {status.label}
-                  </span>
-
-                </div>
-
-
-                {/* ========================================== */}
-                {/* 📊 META DETAILS */}
-                {/* ========================================== */}
-                <div className="order-card-meta">
-
-                  {/* Order Date */}
-                  <div className="order-meta-item">
-                    <span className="order-meta-label">Order Date</span>
-                    <span className="order-meta-value">
-                      {formatDate(order.createdAt)}
-                    </span>
-                  </div>
-
-                  {/* Total Price */}
-                  <div className="order-meta-item">
-                    <span className="order-meta-label">Total</span>
-                    <span className="order-meta-value price">
-                      ₹{order.totalPrice?.toFixed(2)}
-                    </span>
-                  </div>
-
-                  {/* Payment Method */}
-                  <div className="order-meta-item">
-                    <span className="order-meta-label">Payment</span>
-                    <span
-                      className={`order-meta-value payment-${order.paymentMethod?.toLowerCase()}`}
-                    >
-                      {order.paymentMethod === "COD"
-                        ? "Cash on Delivery"
-                        : "Online"}
-                    </span>
-                  </div>
-
-                  {/* Items Count */}
-                  <div className="order-meta-item">
-                    <span className="order-meta-label">Items</span>
-                    <span className="order-meta-value">
-                      {order.orderItems?.length}
-                    </span>
-                  </div>
-
-                  {/* Payment Status */}
-                  <div className="order-meta-item">
-                    <span className="order-meta-label">Payment Status</span>
-                    <span
-                      className={`order-meta-value pstatus-${order.paymentStatus?.toLowerCase()}`}
-                    >
-                      {order.paymentStatus
-                        ? order.paymentStatus.charAt(0).toUpperCase() +
-                          order.paymentStatus.slice(1)
-                        : "Pending"}
-                    </span>
-                  </div>
-
-                </div>
-
-
-                {/* ========================================== */}
-                {/* 🧾 ITEMS PREVIEW */}
-                {/* ========================================== */}
-                <div className="order-items-preview">
-
-                  {/* Show first 3 items */}
-                  {order.orderItems?.slice(0, 3).map((item, i) => (
-                    <div key={i} className="order-item-chip">
-                      {item.name} <span>×{item.quantity}</span>
-                    </div>
-                  ))}
-
-                  {/* Show "+ more" if extra items */}
-                  {order.orderItems?.length > 3 && (
-                    <div className="order-item-chip">
-                      +{order.orderItems.length - 3} more
-                    </div>
-                  )}
-
-                </div>
-
-
-                {/* ========================================== */}
-                {/* 🔍 VIEW DETAILS BUTTON */}
-                {/* ========================================== */}
-                <button
-                  className="view-details-btn"
-
-                  // Navigate to order details page
-                  onClick={() => navigate(`/orders/${order._id}`)}
-                >
-                  View Details
-
-                  {/* Arrow Icon */}
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-
-                </button>
-
+            {/* ========================================== */}
+            {/* 🔄 LOADING STATE */}
+            {/* ========================================== */}
+            {loading && (
+              <div className="orders-loader">
+                <div className="orders-spinner" />
+                <p>Loading your orders...</p>
               </div>
-            );
-          })}
+            )}
 
+
+            {/* ========================================== */}
+            {/* ❌ ERROR STATE */}
+            {/* ========================================== */}
+            {!loading && error && (
+              <div className="orders-empty">
+                <div className="orders-empty-icon">⚠️</div>
+                <h3>Something went wrong</h3>
+                <p>{error}</p>
+
+                {/* Retry button reloads page */}
+                <button
+                  className="orders-shop-btn"
+                  onClick={() => window.location.reload()}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
+
+            {/* ========================================== */}
+            {/* 📭 EMPTY STATE */}
+            {/* ========================================== */}
+            {!loading && !error && orders.length === 0 && (
+              <div className="orders-empty">
+                <div className="orders-empty-icon">📦</div>
+                <h3>No orders yet</h3>
+                <p>Looks like you haven't placed any orders yet.</p>
+
+                {/* Navigate to home */}
+                <button
+                  className="orders-shop-btn"
+                  onClick={() => navigate("/")}
+                >
+                  Start Shopping
+                </button>
+              </div>
+            )}
+
+
+            {/* ========================================== */}
+            {/* 📦 ORDERS LIST */}
+            {/* ========================================== */}
+            {!loading && !error && orders.map((order, index) => {
+
+              // Get status config (color + label)
+              const status = getStatusConfig(order.orderStatus);
+
+              return (
+                <div
+                  key={order._id}
+                  className="order-card"
+
+                  // Animation delay for stagger effect
+                  style={{ animationDelay: `${index * 0.07}s` }}
+                >
+
+                  {/* ========================================== */}
+                  {/* 🔝 TOP ROW: ORDER ID + STATUS */}
+                  {/* ========================================== */}
+                  <div className="order-card-top">
+
+                    <div className="order-id-block">
+                      <div className="order-id-label">Order ID</div>
+                      <div className="order-id-value">{order._id}</div>
+                    </div>
+
+                    {/* Status badge */}
+                    <span className={`status-badge ${status.cls}`}>
+                      <span className="status-dot" />
+                      {status.label}
+                    </span>
+
+                  </div>
+
+
+                  {/* ========================================== */}
+                  {/* 📊 META DETAILS */}
+                  {/* ========================================== */}
+                  <div className="order-card-meta">
+
+                    {/* Order Date */}
+                    <div className="order-meta-item">
+                      <span className="order-meta-label">Order Date</span>
+                      <span className="order-meta-value">
+                        {formatDate(order.createdAt)}
+                      </span>
+                    </div>
+
+                    {/* Total Price */}
+                    <div className="order-meta-item">
+                      <span className="order-meta-label">Total</span>
+                      <span className="order-meta-value price">
+                        ₹{order.totalPrice?.toFixed(2)}
+                      </span>
+                    </div>
+
+                    {/* Payment Method */}
+                    <div className="order-meta-item">
+                      <span className="order-meta-label">Payment</span>
+                      <span
+                        className={`order-meta-value payment-${order.paymentMethod?.toLowerCase()}`}
+                      >
+                        {order.paymentMethod === "COD"
+                          ? "Cash on Delivery"
+                          : "Online"}
+                      </span>
+                    </div>
+
+                    {/* Items Count */}
+                    <div className="order-meta-item">
+                      <span className="order-meta-label">Items</span>
+                      <span className="order-meta-value">
+                        {order.orderItems?.length}
+                      </span>
+                    </div>
+
+                    {/* Payment Status */}
+                    <div className="order-meta-item">
+                      <span className="order-meta-label">Payment Status</span>
+                      <span
+                        className={`order-meta-value pstatus-${order.paymentStatus?.toLowerCase()}`}
+                      >
+                        {order.paymentStatus
+                          ? order.paymentStatus.charAt(0).toUpperCase() +
+                          order.paymentStatus.slice(1)
+                          : "Pending"}
+                      </span>
+                    </div>
+
+                  </div>
+
+
+                  {/* ========================================== */}
+                  {/* 🧾 ITEMS PREVIEW */}
+                  {/* ========================================== */}
+                  <div className="order-items-preview">
+
+                    {/* Show first 3 items */}
+                    {order.orderItems?.slice(0, 3).map((item, i) => (
+                      <div key={i} className="order-item-chip">
+                        {item.name} <span>×{item.quantity}</span>
+                      </div>
+                    ))}
+
+                    {/* Show "+ more" if extra items */}
+                    {order.orderItems?.length > 3 && (
+                      <div className="order-item-chip">
+                        +{order.orderItems.length - 3} more
+                      </div>
+                    )}
+
+                  </div>
+
+
+                  {/* ========================================== */}
+                  {/* 🔍 VIEW DETAILS BUTTON */}
+                  {/* ========================================== */}
+                  <button
+                    className="view-details-btn"
+
+                    // Navigate to order details page
+                    onClick={() => navigate(`/orders/${order._id}`)}
+                  >
+                    View Details
+
+                    {/* Arrow Icon */}
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+
+                  </button>
+
+                </div>
+              );
+            })}
+
+          </div>
         </div>
-      </div>
+      </>)}
     </>
   );
 };

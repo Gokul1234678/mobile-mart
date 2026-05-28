@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
+import VideoLoader from "../components/VideoLoader";
 
 const AdminRoute = ({ children }) => {
 
@@ -7,7 +8,8 @@ const AdminRoute = ({ children }) => {
 
   // ⏳ WAIT until user is loaded
   if (loading) {
-    return <h2>Loading...</h2>; // or your loader component
+    return <VideoLoader loaderName="loading" fullscreen />
+    
   }
 
   // ❌ Not logged in

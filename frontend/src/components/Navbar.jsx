@@ -127,26 +127,27 @@ const Navbar = () => {
               </li>
             
               <li className="nav-item me-3 border-bottom responsive-border py-2 products">
-                <a href="#products" className="nav-link text-white">
+                <Link to="/#products" className="nav-link text-white">
                   Products
-                </a>
+                </Link>
               </li>
 
+              {/* Contact Us */}
               <li className="nav-item me-3 border-bottom responsive-border py-2 contact">
-                <a href="#contact" className="nav-link text-white">
+                <Link to="/#contact" className="nav-link text-white">
                   Contact Us
-                </a>
+                </Link>
               </li>
 
               <li className="nav-item border-bottom responsive-border py-2 about">
-                <a href="#footer" className="nav-link text-white">
+                <Link to="/#footer" className="nav-link text-white">
                   About
-                </a>
+                </Link>
               </li>
 
               {/* Mobile view: My profile, orders, cart, logout */}
               <li className="nav-item d-lg-none border-bottom responsive-border py-2">
-                <Link to="/account-settings" className="nav-link">
+                <Link to="/profile" className="nav-link">
                   My Profile
                 </Link>
               </li>

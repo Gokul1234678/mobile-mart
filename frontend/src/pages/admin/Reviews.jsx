@@ -37,6 +37,8 @@ const Reviews = () => {
     };
 
     useEffect(() => {
+            // Set page title on mount
+    document.title = "Reviews | Mobile Mart";
         fetchProducts();
     }, []);
 

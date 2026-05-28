@@ -287,7 +287,7 @@ const Dashboard = () => {
   // ==========================================
   // STATE
   // ==========================================
-  const [data,    setData]    = useState(null);  // dashboard stats from API
+  const [data, setData] = useState(null);  // dashboard stats from API
   const [loading, setLoading] = useState(true);  // show loader while fetching
 
   // ==========================================
@@ -295,6 +295,9 @@ const Dashboard = () => {
   // GET /api/admin/dashboard
   // ==========================================
   useEffect(() => {
+    // Set page title on mount
+    document.title = "Dashboard | Mobile Mart";
+
     const fetchDashboard = async () => {
       try {
         const { data } = await axiosInstance.get(
@@ -315,9 +318,8 @@ const Dashboard = () => {
   // ==========================================
   // LOADING STATE
   // ==========================================
-  if (loading) {
-    return <VideoLoader />;
-  }
+  // if (loading) return <VideoLoader loaderName="loading" />;
+
 
   // ==========================================
   // RENDER
@@ -327,121 +329,151 @@ const Dashboard = () => {
       <style>{styles}</style>
       <div className="dash-page">
 
-        {/* ==========================================
+      {/* Show small inline loader while fetching */}
+      {loading ? (
+        // <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+          <VideoLoader loaderName="loading" content />
+        // </div>
+      ) : (
+
+            <>
+
+              {/* ==========================================
             PAGE HEADER
         ========================================== */}
-        <div className="dash-header">
-          <div>
-            <h2 className="dash-title">Dashboard</h2>
-            <p className="dash-subtitle">Welcome back, Admin 👋</p>
-          </div>
-          {/* Live indicator badge */}
-          <div className="dash-live-badge">
-            <span className="dash-live-dot" />
-            Live
-          </div>
-        </div>
+              <div className="dash-header">
+                <div>
+                  <h2 className="dash-title">Dashboard</h2>
+                  <p className="dash-subtitle">Welcome back, Admin 👋</p>
+                </div>
+                {/* Live indicator badge */}
+                <div className="dash-live-badge">
+                  <span className="dash-live-dot" />
+                  Live
+                </div>
+              </div>
 
-        {/* ==========================================
+              {/* ==========================================
             STAT CARDS — 5 key metrics
         ========================================== */}
-        <div className="dash-cards-grid">
+              <div className="dash-cards-grid">
 
-          <Card
-            title="Total Products"
-            value={data.totalProducts}
-            color="#6f42c1"       /* violet */
-            icon="📦"
-          />
+                <Card
+                  title="Total Products"
+                  value={data.totalProducts}
+                  color="#6f42c1"       /* violet */
+                  icon="📦"
+                />
 
-          <Card
-            title="Total Orders"
-            value={data.totalOrders}
-            color="#0d6efd"       /* blue */
-            icon="🧾"
-          />
+                <Card
+                  title="Total Orders"
+                  value={data.totalOrders}
+                  color="#0d6efd"       /* blue */
+                  icon="🧾"
+                />
+                <Card
+                  title="Cancelled Orders"
+                  value={data.cancelledOrders}
+                  color="#dc3545"   /* red */
+                  icon="❌"
+                />
 
-          <Card
-            title="Total Users"
-            value={data.totalUsers}
-            color="#198754"       /* green */
-            icon="👥"
-          />
+                <Card
+                  title="Total Users"
+                  value={data.totalUsers}
+                  color="#198754"       /* green */
+                  icon="👥"
+                />
 
-          <Card
-            title="Total Revenue"
-            value={`₹${data.totalRevenue.toFixed(2)}`}
-            color="#ff5722"       /* orange — matches app theme */
-            icon="💰"
-          />
+                <Card
+                  title="Total Revenue"
+                  value={`₹${data.totalRevenue.toFixed(2)}`}
+                  color="#ff5722"       /* orange — matches app theme */
+                  icon="💰"
+                />
 
-          <Card
-            title="Out of Stock"
-            value={data.outOfStock}
-            color="#dc3545"       /* red — warning color */
-            icon="⚠️"
-          />
+                <Card
+                  title="Out of Stock"
+                  value={data.outOfStock}
+                  color="#dc3545"       /* red — warning color */
+                  icon="⚠️"
+                />
 
-        </div>
 
-        {/* ==========================================
+              </div>
+
+              {/* ==========================================
             QUICK INFO ROW — summary breakdown
         ========================================== */}
-        <div className="dash-info-row">
+              <div className="dash-info-row">
 
-          {/* Left info card — order/revenue summary */}
-          <div className="dash-info-card">
-            <div className="dash-info-title">
-              <span className="dash-info-title-dot" style={{ background: "#0d6efd" }} />
-              Order Summary
-            </div>
-            <div className="dash-metric-row">
-              <span className="dash-metric-label">Total Orders</span>
-              <span className="dash-metric-value">{data.totalOrders}</span>
-            </div>
-            <div className="dash-metric-row">
-              <span className="dash-metric-label">Total Revenue</span>
-              <span className="dash-metric-value">₹{data.totalRevenue.toFixed(2)}</span>
-            </div>
-            <div className="dash-metric-row">
-              <span className="dash-metric-label">Avg. Order Value</span>
-              {/* Avg = revenue ÷ orders, safe division to avoid NaN */}
-              <span className="dash-metric-value">
-                ₹{data.totalOrders > 0
-                  ? (data.totalRevenue / data.totalOrders).toFixed(2)
-                  : "0.00"}
-              </span>
-            </div>
-          </div>
+                {/* Left info card — order/revenue summary */}
+                <div className="dash-info-card">
+                  <div className="dash-info-title">
+                    <span className="dash-info-title-dot" style={{ background: "#0d6efd" }} />
+                    Order Summary
+                  </div>
+                  <div className="dash-metric-row">
+                    <span className="dash-metric-label">Total Orders</span>
+                    <span className="dash-metric-value">{data.totalOrders}</span>
+                  </div>
+                  <div className="dash-metric-row">
+                    <span className="dash-metric-label">
+                      Cancelled Orders
+                    </span>
 
-          {/* Right info card — inventory summary */}
-          <div className="dash-info-card">
-            <div className="dash-info-title">
-              <span className="dash-info-title-dot" style={{ background: "#6f42c1" }} />
-              Inventory Summary
-            </div>
-            <div className="dash-metric-row">
-              <span className="dash-metric-label">Total Products</span>
-              <span className="dash-metric-value">{data.totalProducts}</span>
-            </div>
-            <div className="dash-metric-row">
-              <span className="dash-metric-label">Out of Stock</span>
-              {/* Red color for out-of-stock warning */}
-              <span className="dash-metric-value" style={{ color: "#dc3545" }}>
-                {data.outOfStock}
-              </span>
-            </div>
-            <div className="dash-metric-row">
-              <span className="dash-metric-label">In Stock</span>
-              {/* In stock = total - out of stock */}
-              <span className="dash-metric-value" style={{ color: "#198754" }}>
-                {data.totalProducts - data.outOfStock}
-              </span>
-            </div>
-          </div>
+                    <span
+                      className="dash-metric-value"
+                      style={{ color: "#dc3545" }}
+                    >
+                      {data.cancelledOrders}
+                    </span>
+                  </div>
+                  <div className="dash-metric-row">
+                    <span className="dash-metric-label">Total Revenue</span>
+                    <span className="dash-metric-value">₹{data.totalRevenue.toFixed(2)}</span>
+                  </div>
+                  <div className="dash-metric-row">
+                    <span className="dash-metric-label">Avg. Order Value</span>
+                    {/* Avg = revenue ÷ orders, safe division to avoid NaN */}
+                    <span className="dash-metric-value">
+                      ₹{data.totalOrders > 0
+                        ? (data.totalRevenue / data.totalOrders).toFixed(2)
+                        : "0.00"}
+                    </span>
+                  </div>
+                </div>
 
-        </div>
+                {/* Right info card — inventory summary */}
+                <div className="dash-info-card">
+                  <div className="dash-info-title">
+                    <span className="dash-info-title-dot" style={{ background: "#6f42c1" }} />
+                    Inventory Summary
+                  </div>
+                  <div className="dash-metric-row">
+                    <span className="dash-metric-label">Total Products</span>
+                    <span className="dash-metric-value">{data.totalProducts}</span>
+                  </div>
+                  <div className="dash-metric-row">
+                    <span className="dash-metric-label">Out of Stock</span>
+                    {/* Red color for out-of-stock warning */}
+                    <span className="dash-metric-value" style={{ color: "#dc3545" }}>
+                      {data.outOfStock}
+                    </span>
+                  </div>
+                  <div className="dash-metric-row">
+                    <span className="dash-metric-label">In Stock</span>
+                    {/* In stock = total - out of stock */}
+                    <span className="dash-metric-value" style={{ color: "#198754" }}>
+                      {data.totalProducts - data.outOfStock}
+                    </span>
+                  </div>
+                </div>
 
+              </div>
+            </>
+
+          )}
       </div>
     </>
   );

@@ -3,13 +3,20 @@ import axiosInstance from "../axios_instance";
 import { toast } from "react-toastify";
 import "../assets/styles/profile.css";
 import Navbar from "../components/Navbar";
-
+// This component helps us set page title and meta description dynamically
+import SEO from "../components/SEO";
 
 import manImg from "../assets/img/icons/man.png";
 import womanImg from "../assets/img/icons/woman.png";
-
-
+import VideoLoader from "../components/VideoLoader";
+import { Link } from "react-router-dom";
+import DeleteAccountModal from "../components/DeleteAccountModal";
 const MyProfile = () => {
+
+  // State to control delete account modal visibility
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // ================= TAB STATE =================
   const [activeTab, setActiveTab] = useState("profile");
@@ -173,20 +180,89 @@ const MyProfile = () => {
     }
   };
 
+// ==========================================
+// DELETE MY ACCOUNT
+// ==========================================
+const handleDeleteAccount = async () => {
+
+  try {
+
+    // ======================================
+    // START LOADING
+    // ======================================
+    setDeleteLoading(true);
+
+
+    // ======================================
+    // CALL DELETE ACCOUNT API
+    // ======================================
+    const { data } = await axiosInstance.delete(
+      "/api/me/delete",
+      {
+        withCredentials: true
+      }
+    );
+
+
+    // ======================================
+    // SUCCESS MESSAGE
+    // ======================================
+    toast.success(data.message);
+
+
+    // ======================================
+    // CLEAR LOCAL STORAGE
+    // ======================================
+    localStorage.clear();
+
+
+    // ======================================
+    // CLOSE MODAL
+    // ======================================
+    setShowDeleteModal(false);
+
+
+    // ======================================
+    // REDIRECT USER
+    // ======================================
+    navigate("/login");
+
+  } catch (error) {
+
+    // ======================================
+    // ERROR MESSAGE
+    // ======================================
+    toast.error(
+      error.response?.data?.message ||
+      "Failed to delete account"
+    );
+
+  } finally {
+
+    // ======================================
+    // STOP LOADING
+    // ======================================
+    setDeleteLoading(false);
+  }
+};
+
   // ==========================================================
   // 🔹 LOADING SCREEN
   // ==========================================================
   if (loading) {
-    return (
-      <div className="text-center mt-5">
-        <div className="spinner-border text-primary"></div>
-      </div>
-    );
+    return <VideoLoader loaderName="loading" fullscreen />
   }
 
   return (
     <>
+
+      <SEO
+        title="My Profile | Mobile Mart"
+        description="Manage your Mobile Mart profile, account settings, address, password, orders, and cart."
+      />
+
       <Navbar />
+
       <div className="container my-5 profile-container">
 
         {/* ================= TOP USER INFO ================= */}
@@ -258,15 +334,15 @@ const MyProfile = () => {
 
               <hr />
 
-              <button className="btn btn-light mb-2">
-                <i className="bi bi-bag me-2"></i> My Orders
-              </button>
+              <Link to="/orders" className="btn btn-light mb-2">
+                <i className="bi bi-bag me-2"> My Orders</i>
+              </Link>
 
-              <button className="btn btn-light mb-2">
+              <Link to="/cart" className="btn btn-light mb-2">
                 <i className="bi bi-cart me-2"></i> My Cart
-              </button>
+              </Link>
 
-              <button className="btn btn-danger">
+              <button className="btn btn-danger" onClick={() => setShowDeleteModal(true)} >
                 <i className="bi bi-trash me-2"></i> Delete My Account
               </button>
             </div>
@@ -325,21 +401,21 @@ const MyProfile = () => {
               <hr />
 
               {/* Orders */}
-              <button className="btn w-100 text-start mb-3 mobile-menu-btn">
+              <Link to="/orders" className="btn w-100 text-start mb-3 mobile-menu-btn">
                 <i className="bi bi-bag me-2"></i>
                 My Orders
-              </button>
+              </Link>
 
               {/* Cart */}
-              <button className="btn w-100 text-start mb-3 mobile-menu-btn">
+              <Link to="/cart" className="btn w-100 text-start mb-3 mobile-menu-btn">
                 <i className="bi bi-cart me-2"></i>
                 My Cart
-              </button>
+              </Link>
 
               <hr />
 
               {/* Delete Account */}
-              <button className="btn w-100 text-start delete-account-btn btn-danger">
+              <button onClick={() => setShowDeleteModal(true)} className="btn w-100 text-start delete-account-btn btn-danger">
                 <i className="bi bi-trash me-2"></i>
                 Delete Account
               </button>
@@ -540,6 +616,19 @@ const MyProfile = () => {
           </div>
         </div>
       </div>
+
+{/* DELETE ACCOUNT MODAL popup */}
+      <DeleteAccountModal
+
+        isOpen={showDeleteModal}
+
+        onClose={() => setShowDeleteModal(false)}
+
+        onDelete={handleDeleteAccount}
+
+        loading={deleteLoading}
+      />
+
     </>
   );
 };

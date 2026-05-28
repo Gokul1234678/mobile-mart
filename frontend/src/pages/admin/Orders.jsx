@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axiosInstance from "../../axios_instance";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import VideoLoader from "../../components/VideoLoader";
 
 // =============================================
 // Self-contained styles — matches admin theme
@@ -374,6 +375,7 @@ const Orders = () => {
       });
       setOrders(data.orders);// set orders list
       setTotalAmount(data.totalAmount); // set total revenue
+
     } catch (err) {
       toast.error("Failed to load orders");
     } finally {
@@ -383,6 +385,8 @@ const Orders = () => {
 
   // Run on render to load orders list
   useEffect(() => {
+        // Set page title on mount
+    document.title = "Orders | Mobile Mart";
     fetchOrders();
   }, []);
 
@@ -448,159 +452,168 @@ const Orders = () => {
     <>
       <style>{styles}</style>
       <div className="orders-admin-page">
-        {/*PAGE HEADER*/}
-        <div className="orders-admin-header">
-          <h2 className="orders-admin-title">Admin Orders</h2>
-        </div>
-
-        {/* ==========================================
-            SUMMARY STRIP — total orders + revenue
-        ========================================== */}
-        <div className="orders-summary-strip">
-
-          {/* Total orders pill — orange left bar */}
-          <div className="orders-summary-pill" style={{ "--pill-color": "#ff5722" }}>
-            <span className="orders-summary-icon">🧾</span>
-            <div>
-              <div className="orders-summary-label">Total Orders</div>
-              <div className="orders-summary-value">{orders.length}</div>
-            </div>
-          </div>
-
-          {/* Total revenue pill — green left bar */}
-          <div className="orders-summary-pill" style={{ "--pill-color": "#198754" }}>
-            <span className="orders-summary-icon">💰</span>
-            <div>
-              <div className="orders-summary-label">Total Revenue</div>
-              <div className="orders-summary-value"> ₹{Math.round(totalAmount)}</div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* ==========================================
-            LOADING STATE
-        ========================================== */}
+        {/* Show small inline loader while fetching */}
         {loading ? (
-          <div className="orders-loading">Loading orders...</div>
+          // <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+          <VideoLoader loaderName="loading1" content />
+          // </div>
         ) : (
 
-          /* ==========================================
-              ORDERS TABLE
-          ========================================== */
-          <div className="orders-table-card">
-            <table className="orders-table">
+          <>
 
-              {/* Table header — navy background */}
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>User</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th className="center">Actions</th>
-                </tr>
-              </thead>
+            {/*PAGE HEADER*/}
+            <div className="orders-admin-header">
+              <h2 className="orders-admin-title">Admin Orders</h2>
+            </div>
 
-              <tbody>
-                {orders.length === 0 ? (
-                  /* Empty state */
-                  <tr>
-                    <td colSpan="6">
-                      <div className="orders-empty">
-                        <div className="orders-empty-icon">🧾</div>
-                        <p>No orders found</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  orders.map((order) => (
-                    <tr key={order._id}>
+            {/* ==========================================
+            SUMMARY STRIP — total orders + revenue
+        ========================================== */}
+            <div className="orders-summary-strip">
 
-                      {/* ---- Order ID — last 6 chars, full ID on hover ---- */}
-                      <td>
-                        <span className="orders-id" title={order._id}>
-                          #{order._id.slice(-6).toUpperCase()}
-                        </span>
-                      </td>
+              {/* Total orders pill — orange left bar */}
+              <div className="orders-summary-pill" style={{ "--pill-color": "#ff5722" }}>
+                <span className="orders-summary-icon">🧾</span>
+                <div>
+                  <div className="orders-summary-label">Total Orders</div>
+                  <div className="orders-summary-value">{orders.length}</div>
+                </div>
+              </div>
 
-                      {/* ---- Customer name ---- */}
-                      <td>
-                        <span className="orders-user">{order.user?.name || "—"}</span>
-                      </td>
+              {/* Total revenue pill — green left bar */}
+              <div className="orders-summary-pill" style={{ "--pill-color": "#198754" }}>
+                <span className="orders-summary-icon">💰</span>
+                <div>
+                  <div className="orders-summary-label">Total Revenue</div>
+                  <div className="orders-summary-value"> ₹{Math.round(totalAmount)}</div>
+                </div>
+              </div>
 
-                      {/* ---- Total price — black bold ---- */}
-                      <td>
-                        <span className="orders-amount">₹{order.totalPrice}</span>
-                      </td>
+            </div>
 
-                      {/* ---- Status badge + dropdown to change status ---- */}
-                      <td>
-                        {/* Badge shows current status with color */}
-                        <span className={`orders-status-badge ${getStatusCls(order.orderStatus)}`}>
-                          {order.orderStatus}
-                        </span>
+            {/* ==========================================
+            LOADING STATE
+        ========================================== */}
+            {loading ? (
+              <div className="orders-loading">Loading orders...</div>
+            ) : (
 
-                        {/* Dropdown to update status — disabled when delivered */}
-                        <select
-                          className="orders-status-select"
-                          value={order.orderStatus}
-                          disabled={order.orderStatus === "delivered" || order.orderStatus === "cancelled"} // can't change once delivered or cancelled
-                          onChange={(e) => updateStatus(order._id, e.target.value)}
-                        >
-                          <option value="processing">Processing</option>
-                          <option value="shipped">Shipped</option>
-                          <option value="delivered">Delivered</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
-                      </td>
+              /* ==========================================
+                  ORDERS TABLE
+              ========================================== */
+              <div className="orders-table-card">
+                <table className="orders-table">
 
-                      {/* ---- Order date ---- */}
-                      <td>
-                        <span className="orders-date">
-                          {new Date(order.createdAt).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </td>
-
-                      {/* ---- Action buttons: View + Delete ---- */}
-                      <td className="center">
-                        <div className="orders-actions">
-
-                          {/* View — navigates to order detail page */}
-                          <button
-                            className="orders-action-btn view"
-                            onClick={() => navigate(`/admin/orders/${order._id}`)}
-                          >
-                            <IconView />
-                            View
-                          </button>
-
-                          {/* Delete — confirms then removes order */}
-                          <button
-                            className="orders-action-btn delete"
-                            onClick={() => deleteOrder(order._id)}
-                          >
-                            <IconDelete />
-                            Delete
-                          </button>
-
-                        </div>
-                      </td>
-
+                  {/* Table header — navy background */}
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>User</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th className="center">Actions</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
+                  </thead>
 
-            </table>
-          </div>
-        )}
+                  <tbody>
+                    {orders.length === 0 ? (
+                      /* Empty state */
+                      <tr>
+                        <td colSpan="6">
+                          <div className="orders-empty">
+                            <div className="orders-empty-icon">🧾</div>
+                            <p>No orders found</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      orders.map((order) => (
+                        <tr key={order._id}>
 
+                          {/* ---- Order ID — last 6 chars, full ID on hover ---- */}
+                          <td>
+                            <span className="orders-id" title={order._id}>
+                              #{order._id.slice(-6).toUpperCase()}
+                            </span>
+                          </td>
+
+                          {/* ---- Customer name ---- */}
+                          <td>
+                            <span className="orders-user">{order.user?.name || "—"}</span>
+                          </td>
+
+                          {/* ---- Total price — black bold ---- */}
+                          <td>
+                            <span className="orders-amount">₹{order.totalPrice}</span>
+                          </td>
+
+                          {/* ---- Status badge + dropdown to change status ---- */}
+                          <td>
+                            {/* Badge shows current status with color */}
+                            <span className={`orders-status-badge ${getStatusCls(order.orderStatus)}`}>
+                              {order.orderStatus}
+                            </span>
+
+                            {/* Dropdown to update status — disabled when delivered */}
+                            <select
+                              className="orders-status-select"
+                              value={order.orderStatus}
+                              disabled={order.orderStatus === "delivered" || order.orderStatus === "cancelled"} // can't change once delivered or cancelled
+                              onChange={(e) => updateStatus(order._id, e.target.value)}
+                            >
+                              <option value="processing">Processing</option>
+                              <option value="shipped">Shipped</option>
+                              <option value="delivered">Delivered</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          </td>
+
+                          {/* ---- Order date ---- */}
+                          <td>
+                            <span className="orders-date">
+                              {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </td>
+
+                          {/* ---- Action buttons: View + Delete ---- */}
+                          <td className="center">
+                            <div className="orders-actions">
+
+                              {/* View — navigates to order detail page */}
+                              <button
+                                className="orders-action-btn view"
+                                onClick={() => navigate(`/admin/orders/${order._id}`)}
+                              >
+                                <IconView />
+                                View
+                              </button>
+
+                              {/* Delete — confirms then removes order */}
+                              <button
+                                className="orders-action-btn delete"
+                                onClick={() => deleteOrder(order._id)}
+                              >
+                                <IconDelete />
+                                Delete
+                              </button>
+
+                            </div>
+                          </td>
+
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+
+                </table>
+              </div>
+            )}
+          </>)}
       </div>
     </>
   );

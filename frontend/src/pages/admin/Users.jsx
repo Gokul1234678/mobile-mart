@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import Pagination from "react-js-pagination";
 import { useSelector } from "react-redux";
+import VideoLoader from "../../components/VideoLoader";
+
 /* ─── Styles ─────────────────────────────────────────────────── */
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@400;500;600&display=swap');
@@ -363,7 +365,10 @@ const Users = () => {
     }
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { 
+        // Set page title on mount
+    document.title = "Users | Mobile Mart";
+    fetchUsers(); }, []);
 
   const filteredUsers = users.filter((u) =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -444,10 +449,11 @@ const Users = () => {
           {/* Table Card */}
           <div className="um-card">
             {loading ? (
-              <div className="um-state">
-                <div className="um-spinner" />
-                Loading users…
-              </div>
+              // <div className="um-state">
+              //   <div className="um-spinner" />
+              //   Loading users…
+              // </div>
+              <VideoLoader loaderName="loading" content />
             ) : currentUsers.length === 0 ? (
               <div className="um-state">No users found.</div>
             ) : (
@@ -520,6 +526,8 @@ const Users = () => {
                             >
                               👁️
                             </button>
+
+                            {/* delete user btn */}
                             <span
                               title={
                                 loggedInUser._id === user._id
@@ -528,6 +536,7 @@ const Users = () => {
                               }
                             >
                               <button
+                              onClick={() => deleteUser(user._id)}
                                 className="btn btn-sm btn-danger"
                                 disabled={loggedInUser._id === user._id}
                                 style={{

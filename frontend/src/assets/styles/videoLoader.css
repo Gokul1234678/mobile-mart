@@ -1,4 +1,3 @@
-/* BASE LOADER */
 .video-loader {
   display: flex;
   justify-content: center;
@@ -15,9 +14,9 @@
   position: relative;
 }
 
-/* Video size */
+/* Video size — base (inline) */
 .video-loader video {
-  width: 80px; /* small size for inline loader */
+  width: 80px;
   height: auto;
 }
 
@@ -27,15 +26,28 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
-
   background-color: #ffffff;
   z-index: 9999;
 }
 
-/* Bigger video for fullscreen */
 .video-loader.fullscreen video {
-  /* width: 160px; */
   width: 50vh;
+}
+
+/* ── CONTENT AREA LOADER ──────────────────────────
+   Fills only the page content area.
+   Sidebar + navbar stay fully visible.
+   position: relative means "stay in the normal flow, inside your parent". The loader's parent is the content area div — so it can never escape outside it. Sidebar and navbar are siblings/parents of the content div, so they're completely untouched.
+──────────────────────────────────────────────── */
+.video-loader.content {
+  position: relative;
+  width: 100%;
+  min-height: 60vh;
+  background-color: transparent;
+}
+
+.video-loader.content video {
+  width: 200px;   /* tweak this value to your liking */
 }
 
 /* Fade states */
@@ -48,4 +60,11 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+}
+
+.dash-loader-wrapper {
+  min-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

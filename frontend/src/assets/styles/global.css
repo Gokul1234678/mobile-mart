@@ -13,7 +13,8 @@ html {
 }
 
 :root {
-  --voilet: #5e17eb;
+  /* --voilet: #5e17eb; */
+  --voilet: #6a0dad;
   --green: #13a82b;
   --white: #ffffff;
   --black: #000000;

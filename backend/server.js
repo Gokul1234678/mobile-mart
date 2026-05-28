@@ -25,7 +25,8 @@ app.use(express.json())// to parse JSON body
 // CORS configuration
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend URL
+    // origin: "http://localhost:5173", // your frontend URL
+    origin: process.env.FRONTEND_URL, // your frontend URL
     credentials: true,
   })
 );

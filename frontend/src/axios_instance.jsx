@@ -6,7 +6,8 @@ import { toast } from "react-toastify";
 // ======================================================
 // This creates a reusable axios configuration
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8000/",
+  // baseURL: "http://localhost:8000/", // for development
+  baseURL: "https://mobile-mart-backend-r618.onrender.com", // for production, change to your backend URL
   withCredentials: true, // Include cookies in requests
 });
 

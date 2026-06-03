@@ -222,13 +222,13 @@ const sendEmail = async (options) => {
   //     pass: process.env.SMTP_PASSWORD // your SMTP or App password
   //   }
   // });
- const transporter = nodemailer.createTransport({
-  service: "gmail",        // ← handles host/port/secure automatically
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD
-  }
-});
+  const transporter = nodemailer.createTransport({
+    service: "gmail",        // ← handles host/port/secure automatically
+    auth: {
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD
+    }
+  });
 
   // ------------------------------------------------------------
   // 2️⃣ DEFINE EMAIL DETAILS
@@ -327,14 +327,14 @@ MobileMart Team
 `;
 
 
-// 🔍 TEMP DEBUG — remove after fixing
-console.log("EMAIL CONFIG:", {
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  user: process.env.SMTP_EMAIL,
-  passExists: !!process.env.SMTP_PASSWORD,
-  frontendUrl: process.env.FRONTEND_URL
-});
+    // 🔍 TEMP DEBUG — remove after fixing
+    console.log("EMAIL CONFIG:", {
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      user: process.env.SMTP_EMAIL,
+      passExists: !!process.env.SMTP_PASSWORD,
+      frontendUrl: process.env.FRONTEND_URL
+    });
 
 
     // ------------------------------------------------------------
@@ -366,7 +366,12 @@ console.log("EMAIL CONFIG:", {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save({ validateBeforeSave: false });
-
+    console.error("FULL EMAIL ERROR:", {
+      message: error.message,
+      code: error.code,
+      response: error.response,
+      responseCode: error.responseCode
+    });
     // ------------------------------------------------------------
     // 8️⃣ Handle server errors
     // ------------------------------------------------------------
@@ -929,55 +934,55 @@ app.get("/api/admin/users/:id", isAuthenticatedUser, isAdmin, async (req, res) =
 
 
 // ✅ DELETE MY ACCOUNT (🔐 LOGGED-IN USER ONLY)
-app.delete("/api/me/delete",isAuthenticatedUser,async (req, res) => {
-// ======================================================
-// Purpose:
-// Allows logged-in user to permanently
-// delete their own account
-//
-// Features:
-// ✔️ authenticated users only
-// ✔️ deletes current logged-in user
-// ✔️ clears auth cookie
-// ✔️ logs user out automatically
-// ======================================================
-    try {
+app.delete("/api/me/delete", isAuthenticatedUser, async (req, res) => {
+  // ======================================================
+  // Purpose:
+  // Allows logged-in user to permanently
+  // delete their own account
+  //
+  // Features:
+  // ✔️ authenticated users only
+  // ✔️ deletes current logged-in user
+  // ✔️ clears auth cookie
+  // ✔️ logs user out automatically
+  // ======================================================
+  try {
 
-      // 1️⃣ Find and delete logged-in user
-      const user = await userModel.findByIdAndDelete(
-        req.user._id // how do we get req.user._id? → isAuthenticatedUser middleware sets req.user based on the token, so we know which user is logged in.
-      );
+    // 1️⃣ Find and delete logged-in user
+    const user = await userModel.findByIdAndDelete(
+      req.user._id // how do we get req.user._id? → isAuthenticatedUser middleware sets req.user based on the token, so we know which user is logged in.
+    );
 
-      // ❌ User not found
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found"
-        });
-      }
-
-      // 2️⃣ Clear authentication cookie
-      // By setting the token cookie to null and expiring it immediately, we effectively log the user out and remove their authentication from the browser.
-      res.cookie("token", null, {
-        expires: new Date(Date.now()),
-        httpOnly: true
-      });
-
-      // ✅ Success response
-      res.status(200).json({
-        success: true,
-        message: "Account deleted successfully"
-      });
-
-    } catch (error) {
-      // ❌ Server error
-      res.status(500).json({
+    // ❌ User not found
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: error.message
+        message: "User not found"
       });
-
     }
+
+    // 2️⃣ Clear authentication cookie
+    // By setting the token cookie to null and expiring it immediately, we effectively log the user out and remove their authentication from the browser.
+    res.cookie("token", null, {
+      expires: new Date(Date.now()),
+      httpOnly: true
+    });
+
+    // ✅ Success response
+    res.status(200).json({
+      success: true,
+      message: "Account deleted successfully"
+    });
+
+  } catch (error) {
+    // ❌ Server error
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
   }
+}
 );
 
 // ✅ UPDATE USER ROLE (🔐 ADMIN ONLY)

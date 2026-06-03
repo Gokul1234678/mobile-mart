@@ -229,7 +229,10 @@ const sendEmail = async (options) => {
   //     pass: process.env.SMTP_PASSWORD
   //   }
   // });
-
+console.log(
+  "PASSWORD LENGTH:",
+  process.env.SMTP_PASSWORD?.length
+);
   const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,

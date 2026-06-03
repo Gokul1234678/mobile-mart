@@ -317,6 +317,15 @@ MobileMart Team
 `;
 
 
+// 🔍 TEMP DEBUG — remove after fixing
+console.log("EMAIL CONFIG:", {
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  user: process.env.SMTP_USER,
+  passExists: !!process.env.SMTP_PASS,
+  frontendUrl: process.env.FRONTEND_URL
+});
+
 
     // ------------------------------------------------------------
     // 6️⃣ Send email using sendEmail() function we created above

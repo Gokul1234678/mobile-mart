@@ -222,21 +222,29 @@ const sendEmail = async (options) => {
   //     pass: process.env.SMTP_PASSWORD // your SMTP or App password
   //   }
   // });
-  const transporter = nodemailer.createTransport({
-    service: "gmail",        // ← handles host/port/secure automatically
-    auth: {
-      user: process.env.SMTP_EMAIL,
-      pass: process.env.SMTP_PASSWORD
-    }
-  });
+  // const transporter = nodemailer.createTransport({
+  //   service: "gmail",        // ← handles host/port/secure automatically
+  //   auth: {
+  //     user: process.env.SMTP_EMAIL,
+  //     pass: process.env.SMTP_PASSWORD
+  //   }
+  // });
 
-try {
-  await transporter.verify();
-  console.log("SMTP Connected Successfully");
-} catch (error) {
-  console.log("SMTP VERIFY ERROR:", error);
-  throw error;
-}
+  const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+await transporter.verify();
+console.log("SMTP Connected Successfully");
 
 
   // ------------------------------------------------------------

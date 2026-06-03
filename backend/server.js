@@ -230,6 +230,15 @@ const sendEmail = async (options) => {
     }
   });
 
+try {
+  await transporter.verify();
+  console.log("SMTP Connected Successfully");
+} catch (error) {
+  console.log("SMTP VERIFY ERROR:", error);
+  throw error;
+}
+
+
   // ------------------------------------------------------------
   // 2️⃣ DEFINE EMAIL DETAILS
   // ------------------------------------------------------------

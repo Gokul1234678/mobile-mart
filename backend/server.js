@@ -212,8 +212,11 @@ const sendEmail = async (options) => {
   // You must define SMTP_HOST, SMTP_PORT, SMTP_EMAIL, SMTP_PASSWORD in .env file.
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,     // e.g., smtp.gmail.com
-    port: process.env.SMTP_PORT,     // e.g., 587 or 465 it is used for secure connection
-    secure: false, // false for 587, true for 465 it is used for secure connection
+    // port: process.env.SMTP_PORT,     // e.g., 587 or 465 it is used for secure connection
+    // secure: false, // false for 587, true for 465 it is used for secure connection
+    port: 465,     // e.g., 587 or 465 it is used for secure connection
+    secure: true, // false for 587, true for 465 it is used for secure connection
+    requireTLS: true,  // Use TLS encryption why? Because it encrypts the email during transmission, making it more secure and preventing interception by attackers.
     auth: {
       user: process.env.SMTP_EMAIL,  // your email address
       pass: process.env.SMTP_PASSWORD // your SMTP or App password

@@ -1,29 +1,7 @@
-// ======================================================
-// 📦 FETCH ALL ORDERS
-// ======================================================
-const orders = await orderModel.find();
 
-
-// ======================================================
-// 💰 CALCULATE REVENUE (DELIVERED ORDERS ONLY)
-// ======================================================
-// Only delivered orders count as completed revenue
-
-const totalRevenue = orders.reduce((acc, order) => {
-
-  // Add revenue ONLY if order delivered
-  if (order.orderStatus === "delivered") {
-    return acc + order.totalPrice;
-  }
-
-  return acc;
-
-}, 0);
-
-
-// ======================================================
-// ❌ CANCELLED ORDERS COUNT
-// ======================================================
-const cancelledOrders = orders.filter(
-  order => order.orderStatus === "cancelled"
-).length;
+{SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_EMAIL=agsgokul6@gmail.com
+SMTP_PASSWORD=dbfnvuktfvxakvzq
+SMTP_FROM_NAME=MobileMart
+SMTP_FROM_EMAIL=agsgokul6@gmail.com}

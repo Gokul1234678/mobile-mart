@@ -17,9 +17,6 @@ const crypto = require("crypto");
 // Import Nodemailer (for sending emails)
 const nodemailer = require("nodemailer");
 
-// 📧 Email sending function (options = { email, subject, message })
-const { Resend } = require("resend");
-
 
 // Load config file
 dotenv.config({ path: "./config/config.env" })
@@ -205,23 +202,8 @@ userSchema.methods.getResetPasswordToken = function () {
   return resetToken;
 };
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
-app.get("/test-email", async (req, res) => {
-  try {
-    await resend.emails.send({
-      from: "Mobile Mart <onboarding@resend.dev>",
-      to: "agsgokul302@gmail.com",
-      subject: "Test Email",
-      text: "Resend is working!"
-    });
 
-    res.send("Email sent");
-  } catch (error) {
-    console.log(error);
-    res.status(500).send(error.message);
-  }
-});
 // 📧 Email sending function (options = { email, subject, message })
 const sendEmail = async (options) => {
 
@@ -254,15 +236,12 @@ const sendEmail = async (options) => {
     process.env.SMTP_PASSWORD?.length
   );
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
     secure: false,
     auth: {
       user: process.env.SMTP_EMAIL,
       pass: process.env.SMTP_PASSWORD
-    },
-    tls: {
-      rejectUnauthorized: false
     }
   });
 
@@ -293,7 +272,31 @@ const sendEmail = async (options) => {
 // MODEL CREATION (AFTER METHOD)
 let userModel = mongoose.model("user", userSchema);
 
+app.get("/test-email", async (req, res) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASSWORD
+      }
+    });
 
+    await transporter.sendMail({
+      from: "Mobile Mart <agsgokul6@gmail.com>",
+      to: "agsgokul6@gmail.com",
+      subject: "Brevo Test",
+      text: "Brevo SMTP is working!"
+    });
+
+    res.send("Email Sent Successfully");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message);
+  }
+});
 // ✅ Forgot Password api
 app.post("/api/forgot-password", async (req, res) => {
   let user; //let user; created BEFORE try block Now catch block ALWAYS has access to user  

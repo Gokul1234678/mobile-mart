@@ -17,6 +17,11 @@ const crypto = require("crypto");
 // Import Nodemailer (for sending emails)
 const nodemailer = require("nodemailer");
 
+// 📧 Email sending function (options = { email, subject, message })
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 // Load config file
 dotenv.config({ path: "./config/config.env" })
 
@@ -201,7 +206,21 @@ userSchema.methods.getResetPasswordToken = function () {
   return resetToken;
 };
 
+app.get("/test-email", async (req, res) => {
+  try {
+    await resend.emails.send({
+      from: "Mobile Mart <onboarding@resend.dev>",
+      to: "your-email@gmail.com",
+      subject: "Test Email",
+      text: "Resend is working!"
+    });
 
+    res.send("Email sent");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message);
+  }
+});
 // 📧 Email sending function (options = { email, subject, message })
 const sendEmail = async (options) => {
 
@@ -229,25 +248,25 @@ const sendEmail = async (options) => {
   //     pass: process.env.SMTP_PASSWORD
   //   }
   // });
-console.log(
-  "PASSWORD LENGTH:",
-  process.env.SMTP_PASSWORD?.length
-);
+  console.log(
+    "PASSWORD LENGTH:",
+    process.env.SMTP_PASSWORD?.length
+  );
   const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
 
-await transporter.verify();
-console.log("SMTP Connected Successfully");
+  await transporter.verify();
+  console.log("SMTP Connected Successfully");
 
 
   // ------------------------------------------------------------

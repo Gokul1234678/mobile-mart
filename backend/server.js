@@ -211,7 +211,7 @@ app.get("/test-email", async (req, res) => {
   try {
     await resend.emails.send({
       from: "Mobile Mart <onboarding@resend.dev>",
-      to: "gokul1672003@gmail.com",
+      to: "agsgokul16@gmail.com",
       subject: "Test Email",
       text: "Resend is working!"
     });

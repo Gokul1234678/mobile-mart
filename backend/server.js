@@ -20,7 +20,6 @@ const nodemailer = require("nodemailer");
 // 📧 Email sending function (options = { email, subject, message })
 const { Resend } = require("resend");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Load config file
 dotenv.config({ path: "./config/config.env" })
@@ -205,6 +204,8 @@ userSchema.methods.getResetPasswordToken = function () {
   // This token will be emailed to the user for resetting password
   return resetToken;
 };
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.get("/test-email", async (req, res) => {
   try {

@@ -38,9 +38,9 @@ const ForgotPassword = () => {
       setEmail("");
 
       // optional redirect
-      // setTimeout(() => {
-      //   navigate("/login");
-      // }, 2500);
+      setTimeout(() => {
+        navigate("/login");
+      }, 2500);
 
     } catch (error) {
       toast.error(

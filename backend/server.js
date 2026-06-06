@@ -216,22 +216,25 @@ userSchema.methods.getResetPasswordToken = function () {
 const SibApiV3Sdk = require("sib-api-v3-sdk"); // this is for sending email using Brevo (formerly Sendinblue)
 
 const sendEmail = async (options) => {
+// This function sends an email using Brevo's Transactional Emails API. It takes an options object with email, subject, and message properties, configures the Brevo API client, prepares the email data, and sends the email. If successful, it logs a success message; if it fails, it throws an error to be handled by the caller.
 
   // ------------------------------------------------------------
   // 1️⃣ Configure Brevo API Key
-  // ------------------------------------------------------------
-  const defaultClient = SibApiV3Sdk.ApiClient.instance;
+// This code sets up the Brevo API client by loading the API key from environment variables. It uses the SibApiV3Sdk library to create an instance of the Transactional Emails API, which will be used to send emails.
+  const defaultClient = SibApiV3Sdk.ApiClient.instance;// connect to Brevo API
 
+  // in simple words, this code is saying: "Hey Brevo, here is my API key to authenticate me. Please allow me to send emails using your service."
   const apiKey =
     defaultClient.authentications["api-key"];
 
+    // innn simple words, this line is saying: "Brevo, my API key is stored in an environment variable called BREVO_API_KEY. Please use that key to verify that I have permission to send emails through your service."
   apiKey.apiKey = process.env.BREVO_API_KEY;
 
   // ------------------------------------------------------------
   // 2️⃣ Create Transactional Email API Instance
   // ------------------------------------------------------------
   const apiInstance =
-    new SibApiV3Sdk.TransactionalEmailsApi();
+    new SibApiV3Sdk.TransactionalEmailsApi();// This creates an instance of the Transactional Emails API, which provides methods to send emails. We will use this instance to call the sendTransacEmail() method later to actually send the email.
 
   // ------------------------------------------------------------
   // 3️⃣ Prepare Email Data
@@ -239,11 +242,13 @@ const sendEmail = async (options) => {
   const sendSmtpEmail =
     new SibApiV3Sdk.SendSmtpEmail();
 
+    // This code prepares the email data in the format required by Brevo's API. It sets the sender's name and email, the recipient's email (from options), the subject (from options), and the plain text content of the email (from options). This object will be passed to the sendTransacEmail() method to send the email.
   sendSmtpEmail.sender = {
     name: "MobileMart",
     email: "agsgokul6@gmail.com"
   };
 
+  // Here, we set the recipient's email address using the options parameter passed to the sendEmail function. This allows us to dynamically specify who will receive the email when we call this function.
   sendSmtpEmail.to = [
     {
       email: options.email

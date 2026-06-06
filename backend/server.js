@@ -310,7 +310,7 @@ app.get("/api/test-email", async (req, res) => {
 
     sendSmtpEmail.to = [
       {
-        email: "agsgokul6@gmail.com"
+        email: "gokul1672003@gmail.com"
       }
     ];
 

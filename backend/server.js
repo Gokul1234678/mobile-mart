@@ -341,14 +341,14 @@ MobileMart Team
 `;
 
 
-    // 🔍 TEMP DEBUG — remove after fixing
-    console.log("EMAIL CONFIG:", {
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      user: process.env.SMTP_EMAIL,
-      passExists: !!process.env.SMTP_PASSWORD,
-      frontendUrl: process.env.FRONTEND_URL
-    });
+    // // 🔍 TEMP DEBUG — remove after fixing
+    // console.log("EMAIL CONFIG:", {
+    //   host: process.env.SMTP_HOST,
+    //   port: process.env.SMTP_PORT,
+    //   user: process.env.SMTP_EMAIL,
+    //   passExists: !!process.env.SMTP_PASSWORD,
+    //   frontendUrl: process.env.FRONTEND_URL
+    // });
 
 
     // ------------------------------------------------------------

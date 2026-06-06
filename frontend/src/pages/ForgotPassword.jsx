@@ -31,6 +31,7 @@ const ForgotPassword = () => {
       );
 
       // toast.success(data.message);
+      // why this toast is not showing? Because in server.js, we are sending the same message for both success and error cases ("Test email sent successfully"), so the frontend always receives a success message even when email sending fails. To fix this, we need to send different messages for success and error cases in server.js. For example, in the catch block of the forgot-password route, we can send a different error message like "Failed to send reset link. Please try again later." This way, the frontend can show the appropriate toast notification based on the response from the backend.
       toast.success(
         "Reset link sent successfully. Please check your email."
       );
@@ -38,6 +39,7 @@ const ForgotPassword = () => {
       setEmail("");
 
       // optional redirect
+      // why redirect after 2.5 seconds? Because we want to give the user some time to read the success message before navigating them back to the login page. If we navigate immediately, they might miss the toast notification. By adding a short delay, we ensure that they see the confirmation that the reset link was sent before being redirected to the login page.
       setTimeout(() => {
         navigate("/login");
       }, 2500);
@@ -84,6 +86,13 @@ const ForgotPassword = () => {
           >
             {loading ? "Sending..." : "Send Reset Link"}
           </button>
+          <button
+  onClick={() =>
+    toast.success("Toast is working")
+  }
+>
+  Test Toast
+</button>
 
         </form>
 

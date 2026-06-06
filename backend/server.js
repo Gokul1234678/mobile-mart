@@ -277,7 +277,7 @@ app.get("/api/test-email", async (req, res) => {
   try {
 
     const Brevo = require("@getbrevo/brevo");
-console.log(Brevo);
+console.log(process.env.BREVO_API_KEY);
 
     // Initialize Brevo client
     const client = Brevo.ApiClient.instance;

@@ -272,31 +272,50 @@ const sendEmail = async (options) => {
 // MODEL CREATION (AFTER METHOD)
 let userModel = mongoose.model("user", userSchema);
 
-app.get("/test-email", async (req, res) => {
+// ✅ TEST EMAIL ROUTE — remove after testing
+app.get("/api/test-email", async (req, res) => {
   try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASSWORD
-      }
+
+    const Brevo = require("@getbrevo/brevo");
+
+    // Initialize Brevo client
+    const client = Brevo.ApiClient.instance;
+
+    // Set API key from environment variable
+    client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
+
+    // Create transactional email API instance
+    const api = new Brevo.TransactionalEmailsApi();
+
+    // Send test email
+    await api.sendTransacEmail({
+      sender: {
+        name: "MobileMart",
+        email: "agsgokul6@gmail.com"  // your Gmail here
+      },
+      to: [
+        { email: "agsgokul6@gmail.com" }  // send to yourself for testing
+      ],
+      subject: "MobileMart Test Email ✅",
+      textContent: "Hello! This is a test email from MobileMart using Brevo. It is working!"
     });
 
-    await transporter.sendMail({
-      from: "Mobile Mart <agsgokul6@gmail.com>",
-      to: "agsgokul6@gmail.com",
-      subject: "Brevo Test",
-      text: "Brevo SMTP is working!"
+    res.status(200).json({
+      success: true,
+      message: "Test email sent! Check your inbox."
     });
 
-    res.send("Email Sent Successfully");
   } catch (error) {
-    console.log(error);
-    res.status(500).send(error.message);
+    console.error("BREVO TEST ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 });
+
+
+
 // ✅ Forgot Password api
 app.post("/api/forgot-password", async (req, res) => {
   let user; //let user; created BEFORE try block Now catch block ALWAYS has access to user  

@@ -273,47 +273,87 @@ const sendEmail = async (options) => {
 let userModel = mongoose.model("user", userSchema);
 
 // ✅ TEST EMAIL ROUTE — remove after testing
+// ==========================================================
+// ✅ TEST EMAIL ROUTE
+// ==========================================================
 app.get("/api/test-email", async (req, res) => {
   try {
 
-    const Brevo = require("@getbrevo/brevo");
+    const SibApiV3Sdk = require("sib-api-v3-sdk");
 
-    const api = new Brevo.TransactionalEmailsApi();
+    // --------------------------------------------------
+    // Configure Brevo API Key
+    // --------------------------------------------------
+    const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
-    api.setApiKey(
-      Brevo.TransactionalEmailsApiApiKeys.apiKey,
-      process.env.BREVO_API_KEY
-    );
+    const apiKey =
+      defaultClient.authentications["api-key"];
 
-    await api.sendTransacEmail({
-      sender: {
-        name: "MobileMart",
+    apiKey.apiKey = process.env.BREVO_API_KEY;
+
+    // --------------------------------------------------
+    // Create Transactional Email API
+    // --------------------------------------------------
+    const apiInstance =
+      new SibApiV3Sdk.TransactionalEmailsApi();
+
+    // --------------------------------------------------
+    // Email Data
+    // --------------------------------------------------
+    const sendSmtpEmail =
+      new SibApiV3Sdk.SendSmtpEmail();
+
+    sendSmtpEmail.sender = {
+      name: "MobileMart",
+      email: "agsgokul6@gmail.com"
+    };
+
+    sendSmtpEmail.to = [
+      {
         email: "agsgokul6@gmail.com"
-      },
-      to: [
-        {
-          email: "agsgokul6@gmail.com"
-        }
-      ],
-      subject: "MobileMart Test Email",
-      textContent:
-        "Hello! This is a test email from MobileMart."
-    });
+      }
+    ];
 
+    sendSmtpEmail.subject =
+      "MobileMart Test Email ✅";
+
+    sendSmtpEmail.textContent =
+      "Hello! This is a test email from MobileMart using Brevo.";
+
+    // --------------------------------------------------
+    // Send Email
+    // --------------------------------------------------
+    const result =
+      await apiInstance.sendTransacEmail(
+        sendSmtpEmail
+      );
+
+    console.log("EMAIL SENT:", result);
+
+    // --------------------------------------------------
+    // Success Response
+    // --------------------------------------------------
     res.status(200).json({
       success: true,
-      message: "Email sent successfully"
+      message: "Test email sent successfully"
     });
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "BREVO TEST ERROR:",
+      error.response?.body || error
+    );
 
+    // --------------------------------------------------
+    // Error Response
+    // --------------------------------------------------
     res.status(500).json({
       success: false,
-      message: error.message
+      message:
+        error.response?.body?.message ||
+        error.message
     });
-
   }
 });
 

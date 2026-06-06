@@ -204,159 +204,68 @@ userSchema.methods.getResetPasswordToken = function () {
 
 
 
-// 📧 Email sending function (options = { email, subject, message })
+// ==========================================================
+// 📧 SEND EMAIL USING BREVO
+// ==========================================================
+// options = {
+//   email: receiver email
+//   subject: email subject
+//   message: email body
+// }
+// ==========================================================
+const SibApiV3Sdk = require("sib-api-v3-sdk"); // this is for sending email using Brevo (formerly Sendinblue)
+
 const sendEmail = async (options) => {
 
   // ------------------------------------------------------------
-  // 1️⃣ CREATE EMAIL TRANSPORTER
+  // 1️⃣ Configure Brevo API Key
   // ------------------------------------------------------------
-  // This creates a connection to your SMTP server.
-  // You must define SMTP_HOST, SMTP_PORT, SMTP_EMAIL, SMTP_PASSWORD in .env file.
-  // const transporter = nodemailer.createTransport({
-  //   host: process.env.SMTP_HOST,     // e.g., smtp.gmail.com
-  //   // port: process.env.SMTP_PORT,     // e.g., 587 or 465 it is used for secure connection
-  //   // secure: false, // false for 587, true for 465 it is used for secure connection
-  //   port: 465,     // e.g., 587 or 465 it is used for secure connection
-  //   secure: true, // false for 587, true for 465 it is used for secure connection
-  //   requireTLS: true,  // Use TLS encryption why? Because it encrypts the email during transmission, making it more secure and preventing interception by attackers.
-  //   auth: {
-  //     user: process.env.SMTP_EMAIL,  // your email address
-  //     pass: process.env.SMTP_PASSWORD // your SMTP or App password
-  //   }
-  // });
-  // const transporter = nodemailer.createTransport({
-  //   service: "gmail",        // ← handles host/port/secure automatically
-  //   auth: {
-  //     user: process.env.SMTP_EMAIL,
-  //     pass: process.env.SMTP_PASSWORD
-  //   }
-  // });
-  console.log(
-    "PASSWORD LENGTH:",
-    process.env.SMTP_PASSWORD?.length
-  );
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: false,
-    auth: {
-      user: process.env.SMTP_EMAIL,
-      pass: process.env.SMTP_PASSWORD
-    }
-  });
+  const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
-  await transporter.verify();
-  console.log("SMTP Connected Successfully");
+  const apiKey =
+    defaultClient.authentications["api-key"];
 
+  apiKey.apiKey = process.env.BREVO_API_KEY;
 
   // ------------------------------------------------------------
-  // 2️⃣ DEFINE EMAIL DETAILS
+  // 2️⃣ Create Transactional Email API Instance
   // ------------------------------------------------------------
-  // What email to send? To whom? What subject? What message?
-  const message = {
-    from: `${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`,     // Sender name + email
-    to: options.email,               // Receiver email
-    subject: options.subject,        // Email subject line
-    text: options.message            // Plain text message body
-    // You can also use html: options.message if sending HTML email
+  const apiInstance =
+    new SibApiV3Sdk.TransactionalEmailsApi();
+
+  // ------------------------------------------------------------
+  // 3️⃣ Prepare Email Data
+  // ------------------------------------------------------------
+  const sendSmtpEmail =
+    new SibApiV3Sdk.SendSmtpEmail();
+
+  sendSmtpEmail.sender = {
+    name: "MobileMart",
+    email: "agsgokul6@gmail.com"
   };
 
+  sendSmtpEmail.to = [
+    {
+      email: options.email
+    }
+  ];
+
+  sendSmtpEmail.subject = options.subject;
+
+  sendSmtpEmail.textContent = options.message;
+
   // ------------------------------------------------------------
-  // 3️⃣ SEND EMAIL USING TRANSPORTER
+  // 4️⃣ Send Email
   // ------------------------------------------------------------
-  // transporter.sendMail() will send the actual email.
-  // It returns a promise, so we await it.
-  await transporter.sendMail(message);
+  await apiInstance.sendTransacEmail(
+    sendSmtpEmail
+  );
+
+  // console.log(`📧 Email sent successfully to ${options.email}`);
 };
 
 // MODEL CREATION (AFTER METHOD)
 let userModel = mongoose.model("user", userSchema);
-
-// ✅ TEST EMAIL ROUTE — remove after testing
-// ==========================================================
-// ✅ TEST EMAIL ROUTE
-// ==========================================================
-app.get("/api/test-email", async (req, res) => {
-  try {
-
-    const SibApiV3Sdk = require("sib-api-v3-sdk");
-
-    // --------------------------------------------------
-    // Configure Brevo API Key
-    // --------------------------------------------------
-    const defaultClient = SibApiV3Sdk.ApiClient.instance;
-
-    const apiKey =
-      defaultClient.authentications["api-key"];
-
-    apiKey.apiKey = process.env.BREVO_API_KEY;
-
-    // --------------------------------------------------
-    // Create Transactional Email API
-    // --------------------------------------------------
-    const apiInstance =
-      new SibApiV3Sdk.TransactionalEmailsApi();
-
-    // --------------------------------------------------
-    // Email Data
-    // --------------------------------------------------
-    const sendSmtpEmail =
-      new SibApiV3Sdk.SendSmtpEmail();
-
-    sendSmtpEmail.sender = {
-      name: "MobileMart",
-      email: "agsgokul6@gmail.com"
-    };
-
-    sendSmtpEmail.to = [
-      {
-        email: "gokul1672003@gmail.com"
-      }
-    ];
-
-    sendSmtpEmail.subject =
-      "MobileMart Test Email ✅";
-
-    sendSmtpEmail.textContent =
-      "Hello! This is a test email from MobileMart using Brevo.";
-
-    // --------------------------------------------------
-    // Send Email
-    // --------------------------------------------------
-    const result =
-      await apiInstance.sendTransacEmail(
-        sendSmtpEmail
-      );
-
-    console.log("EMAIL SENT:", result);
-
-    // --------------------------------------------------
-    // Success Response
-    // --------------------------------------------------
-    res.status(200).json({
-      success: true,
-      message: "Test email sent successfully"
-    });
-
-  } catch (error) {
-
-    console.error(
-      "BREVO TEST ERROR:",
-      error.response?.body || error
-    );
-
-    // --------------------------------------------------
-    // Error Response
-    // --------------------------------------------------
-    res.status(500).json({
-      success: false,
-      message:
-        error.response?.body?.message ||
-        error.message
-    });
-  }
-});
-
 
 
 // ✅ Forgot Password api
@@ -468,9 +377,14 @@ MobileMart Team
     // ------------------------------------------------------------
     // ⚠️ Important: If sending email fails → reset token must be cleared
     // ------------------------------------------------------------
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save({ validateBeforeSave: false });
+    if (user) {// If user exists (i.e., we found the user but email sending failed), then clear the reset token and expiry time.
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save({// Save the user document with cleared token fields
+        validateBeforeSave: false
+      });
+    }
     console.error("FULL EMAIL ERROR:", {
       message: error.message,
       code: error.code,

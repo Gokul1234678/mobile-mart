@@ -277,41 +277,43 @@ app.get("/api/test-email", async (req, res) => {
   try {
 
     const Brevo = require("@getbrevo/brevo");
-console.log(process.env.BREVO_API_KEY);
 
-    // Initialize Brevo client
-    const client = Brevo.ApiClient.instance;
-
-    // Set API key from environment variable
-    client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
-
-    // Create transactional email API instance
     const api = new Brevo.TransactionalEmailsApi();
 
-    // Send test email
+    api.setApiKey(
+      Brevo.TransactionalEmailsApiApiKeys.apiKey,
+      process.env.BREVO_API_KEY
+    );
+
     await api.sendTransacEmail({
       sender: {
         name: "MobileMart",
-        email: "agsgokul6@gmail.com"  // your Gmail here
+        email: "agsgokul6@gmail.com"
       },
       to: [
-        { email: "agsgokul6@gmail.com" }  // send to yourself for testing
+        {
+          email: "agsgokul6@gmail.com"
+        }
       ],
-      subject: "MobileMart Test Email ✅",
-      textContent: "Hello! This is a test email from MobileMart using Brevo. It is working!"
+      subject: "MobileMart Test Email",
+      textContent:
+        "Hello! This is a test email from MobileMart."
     });
 
     res.status(200).json({
       success: true,
-      message: "Test email sent! Check your inbox."
+      message: "Email sent successfully"
     });
 
   } catch (error) {
-    console.error("BREVO TEST ERROR:", error);
+
+    console.error(error);
+
     res.status(500).json({
       success: false,
       message: error.message
     });
+
   }
 });
 

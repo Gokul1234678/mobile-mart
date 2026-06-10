@@ -3235,8 +3235,11 @@ app.post("/api/payment/verify-payment", isAuthenticatedUser, async (req, res) =>
 
 
 // ✅ KEEP BREVO API KEY ACTIVE
-
+// this API is used to send a test email to yourself to keep the Brevo API key active and prevent it from expiring due to inactivity. You can call this API periodically (e.g., once a month) to ensure your email sending functionality continues to work without interruption.
 app.get("/api/keep-brevo-alive", async (req, res) => {
+//  deatailed explaination 
+  //  We implemented a Brevo keep-alive mechanism in MobileMart to ensure that the Forgot Password feature continues to work even if the project is not used for a long time. Brevo automatically deactivates API keys after 90 days of inactivity, which could break email functionality in a portfolio project. To prevent this, we created a protected backend API called /api/keep-brevo-alive that sends a simple email to the admin account using the existing sendEmail() function. This API is secured with a secret key so that only authorized requests can access it. We then used cron-job.org to automatically call this endpoint once every month. When the cron job runs, it triggers the backend API, an email is sent through Brevo, and the API key remains active. This automated approach ensures that the password reset feature stays functional without requiring any manual intervention. 
+
   try {
 
     // Verify secret key
